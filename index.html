@@ -582,7 +582,7 @@
     <script>
         // Google Sheets Configuration - Pre-configured for team use
         let sheetsConfig = {
-            url: 'https://script.google.com/macros/s/AKfycbxK1DKHl8Ti9NHsOHwmRjlmFsBu46mdCGspXdqn0Qowb19LllgVgApntcs9_dMhZ5lnjA/exec'
+            url: 'https://script.google.com/macros/s/AKfycbx4jd2YGUbfz4dQCVJHwS2vJMuTHfmnJsLXnavZkZdZSqEXSSDwFUQWSmTYPv778UAaQw/exec'
         };
 
         // Data structure for checklist items
@@ -658,21 +658,30 @@
             showLoading();
             
             try {
+                console.log('Attempting to load from:', sheetsConfig.url);
                 const response = await fetch(sheetsConfig.url);
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
                 
                 if (response.ok) {
                     const text = await response.text();
+                    console.log('Response text:', text);
                     try {
                         trainings = JSON.parse(text);
+                        console.log('Loaded trainings:', trainings);
                     } catch (e) {
+                        console.log('JSON parse error, initializing empty array');
                         trainings = [];
                     }
                 } else {
-                    throw new Error(`Error loading data: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Response error:', errorText);
+                    throw new Error(`Error loading data: ${response.status} - ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error loading trainings:', error);
-                alert('Error loading data from Google Sheets. Please check your internet connection and try again.');
+                alert(`Error loading data from Google Sheets.\n\nDetails: ${error.message}\n\nPlease check:\n1. Is the Google Apps Script deployed?\n2. Is "Who has access" set to "Anyone"?\n3. Did you authorize the script?\n\nOpen browser console (F12) for more details.`);
             } finally {
                 hideLoading();
                 showDashboard();
@@ -683,6 +692,7 @@
             showLoading();
             
             try {
+                console.log('Attempting to save to:', sheetsConfig.url);
                 const formData = new FormData();
                 formData.append('data', JSON.stringify(trainings));
 
@@ -691,15 +701,21 @@
                     body: formData
                 });
 
+                console.log('Save response status:', response.status);
+
                 if (response.ok) {
+                    const result = await response.text();
+                    console.log('Save result:', result);
                     hideLoading();
                     return true;
                 } else {
-                    throw new Error(`Error saving data: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Save error:', errorText);
+                    throw new Error(`Error saving data: ${response.status} - ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error saving to Google Sheets:', error);
-                alert('Error saving data to Google Sheets. Please check your internet connection and try again.');
+                alert(`Error saving data to Google Sheets.\n\nDetails: ${error.message}\n\nPlease check:\n1. Is the Google Apps Script deployed?\n2. Is "Who has access" set to "Anyone"?\n3. Did you authorize the script?\n\nOpen browser console (F12) for more details.`);
                 hideLoading();
                 return false;
             }
