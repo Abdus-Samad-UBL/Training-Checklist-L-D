@@ -195,6 +195,36 @@
             border-radius: 8px;
             margin-bottom: 15px;
             font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checklist-section.locked {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .checklist-section.locked h2 {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        }
+
+        .section-status {
+            font-size: 14px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .section-status.active {
+            background: #10b981;
+        }
+
+        .section-status.locked {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .checklist-item {
@@ -421,8 +451,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="trainingDate">Training Date *</label>
-                        <input type="date" id="trainingDate" required>
+                        <label for="trainingStartDate">Training Start Date *</label>
+                        <input type="date" id="trainingStartDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="trainingEndDate">Training End Date *</label>
+                        <input type="date" id="trainingEndDate" required>
                     </div>
 
                     <div class="form-group">
@@ -460,6 +495,11 @@
                 </div>
 
                 <div id="trainingHeader" class="form-section"></div>
+
+                <div id="phaseInfo" class="info-box" style="display: none;">
+                    <h4 id="phaseTitle">📍 Current Phase</h4>
+                    <p id="phaseDescription"></p>
+                </div>
 
                 <div class="stats-section">
                     <div class="stat-card">
@@ -603,12 +643,19 @@
         // Training Management
         function saveTraining() {
             const title = document.getElementById('trainingTitle').value.trim();
-            const date = document.getElementById('trainingDate').value;
+            const startDate = document.getElementById('trainingStartDate').value;
+            const endDate = document.getElementById('trainingEndDate').value;
             const checker = document.getElementById('checkerName').value.trim();
             const venue = document.getElementById('venue').value.trim();
 
-            if (!title || !date || !checker || !venue) {
+            if (!title || !startDate || !endDate || !checker || !venue) {
                 alert('Please fill in all required fields!');
+                return;
+            }
+
+            // Validate that end date is not before start date
+            if (new Date(endDate) < new Date(startDate)) {
+                alert('End date cannot be before start date!');
                 return;
             }
 
@@ -616,7 +663,8 @@
                 // Update existing training
                 const training = trainings.find(t => t.id === currentTrainingId);
                 training.title = title;
-                training.date = date;
+                training.startDate = startDate;
+                training.endDate = endDate;
                 training.checkerName = checker;
                 training.venue = venue;
             } else {
@@ -624,7 +672,8 @@
                 const newTraining = {
                     id: Date.now(),
                     title: title,
-                    date: date,
+                    startDate: startDate,
+                    endDate: endDate,
                     checkerName: checker,
                     venue: venue,
                     createdAt: new Date().toISOString(),
@@ -644,7 +693,8 @@
             editMode = true;
             
             document.getElementById('trainingTitle').value = training.title;
-            document.getElementById('trainingDate').value = training.date;
+            document.getElementById('trainingStartDate').value = training.startDate;
+            document.getElementById('trainingEndDate').value = training.endDate;
             document.getElementById('checkerName').value = training.checkerName;
             document.getElementById('venue').value = training.venue;
             document.getElementById('formTitle').textContent = 'Edit Training Information';
@@ -677,6 +727,45 @@
             return checklist;
         }
 
+        // Determine active section based on current date and training dates
+        function getActiveSection(training) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const startDate = new Date(training.startDate);
+            startDate.setHours(0, 0, 0, 0);
+            
+            const endDate = new Date(training.endDate);
+            endDate.setHours(0, 0, 0, 0);
+
+            if (today < startDate) {
+                // Before training starts - Pre-Training section is active
+                return 'preTraining';
+            } else if (today >= startDate && today <= endDate) {
+                // During training - Training Day section is active
+                return 'trainingDay';
+            } else {
+                // After training ends - Post Training section is active
+                return 'postTraining';
+            }
+        }
+
+        function getSectionStatus(sectionKey, activeSection) {
+            if (sectionKey === activeSection) {
+                return { locked: false, label: '🔓 Active Now' };
+            } else {
+                const sectionOrder = ['preTraining', 'trainingDay', 'postTraining'];
+                const activeSectionIndex = sectionOrder.indexOf(activeSection);
+                const currentSectionIndex = sectionOrder.indexOf(sectionKey);
+                
+                if (currentSectionIndex < activeSectionIndex) {
+                    return { locked: true, label: '✅ Completed Phase' };
+                } else {
+                    return { locked: true, label: '🔒 Locked' };
+                }
+            }
+        }
+
         // Rendering Functions
         function renderTrainingList() {
             const container = document.getElementById('trainingList');
@@ -696,12 +785,25 @@
 
             container.innerHTML = trainings.map(training => {
                 const progress = calculateProgress(training);
+                const startDate = new Date(training.startDate).toLocaleDateString();
+                const endDate = new Date(training.endDate).toLocaleDateString();
+                const activeSection = getActiveSection(training);
+                const sectionNames = {
+                    'preTraining': 'Pre-Training Phase',
+                    'trainingDay': 'Training Day Phase',
+                    'postTraining': 'Post-Training Phase'
+                };
+                
                 return `
                     <div class="training-card" onclick="showChecklist(${training.id})">
                         <h3>${training.title}</h3>
-                        <p><strong>Date:</strong> ${new Date(training.date).toLocaleDateString()}</p>
+                        <p><strong>Start:</strong> ${startDate}</p>
+                        <p><strong>End:</strong> ${endDate}</p>
                         <p><strong>Venue:</strong> ${training.venue}</p>
                         <p><strong>Checker:</strong> ${training.checkerName}</p>
+                        <p style="color: #667eea; font-weight: 600; margin-top: 8px;">
+                            📍 ${sectionNames[activeSection]}
+                        </p>
                         <div class="progress">
                             <div class="progress-bar" style="width: ${progress}%"></div>
                         </div>
@@ -713,11 +815,17 @@
 
         function renderTrainingHeader(training) {
             const header = document.getElementById('trainingHeader');
+            const startDate = new Date(training.startDate).toLocaleDateString();
+            const endDate = new Date(training.endDate).toLocaleDateString();
+            
             header.innerHTML = `
                 <h2 style="color: #667eea; margin-bottom: 15px;">${training.title}</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div>
-                        <strong>Date:</strong> ${new Date(training.date).toLocaleDateString()}
+                        <strong>Start Date:</strong> ${startDate}
+                    </div>
+                    <div>
+                        <strong>End Date:</strong> ${endDate}
                     </div>
                     <div>
                         <strong>Venue:</strong> ${training.venue}
@@ -727,23 +835,81 @@
                     </div>
                 </div>
             `;
+
+            // Update phase info banner
+            const activeSection = getActiveSection(training);
+            const phaseInfo = document.getElementById('phaseInfo');
+            const phaseTitle = document.getElementById('phaseTitle');
+            const phaseDescription = document.getElementById('phaseDescription');
+            
+            phaseInfo.style.display = 'block';
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const start = new Date(training.startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(training.endDate);
+            end.setHours(0, 0, 0, 0);
+
+            if (activeSection === 'preTraining') {
+                const daysUntil = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+                phaseTitle.textContent = '📍 Pre-Training Phase';
+                phaseDescription.textContent = `You are currently in the Pre-Training phase. The training starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}. Only Pre-Training Arrangements section is active.`;
+                phaseInfo.style.background = '#dbeafe';
+                phaseInfo.style.borderLeft = '4px solid #3b82f6';
+                phaseDescription.style.color = '#1e3a8a';
+            } else if (activeSection === 'trainingDay') {
+                phaseTitle.textContent = '📍 Training Day Phase';
+                phaseDescription.textContent = 'The training is currently in progress. Only Training Day section is active. Pre-Training section is now locked.';
+                phaseInfo.style.background = '#dcfce7';
+                phaseInfo.style.borderLeft = '4px solid #10b981';
+                phaseDescription.style.color = '#14532d';
+            } else {
+                const daysSince = Math.ceil((today - end) / (1000 * 60 * 60 * 24));
+                phaseTitle.textContent = '📍 Post-Training Phase';
+                phaseDescription.textContent = `The training ended ${daysSince} day${daysSince !== 1 ? 's' : ''} ago. Only Post-Training section is active. Previous sections are now locked.`;
+                phaseInfo.style.background = '#f3e8ff';
+                phaseInfo.style.borderLeft = '4px solid #a855f7';
+                phaseDescription.style.color = '#581c87';
+            }
         }
 
         function renderChecklist(training) {
             const container = document.getElementById('checklistContainer');
+            const activeSection = getActiveSection(training);
             let html = '';
 
             for (const [section, data] of Object.entries(checklistData)) {
+                const status = getSectionStatus(section, activeSection);
+                const sectionClass = status.locked ? 'locked' : '';
+                
                 html += `
-                    <div class="checklist-section">
-                        <h2>${data.title}</h2>
+                    <div class="checklist-section ${sectionClass}">
+                        <h2>
+                            <span>${data.title}</span>
+                            <span class="section-status ${status.locked ? 'locked' : 'active'}">
+                                ${status.label}
+                            </span>
+                        </h2>
                 `;
+
+                if (status.locked) {
+                    html += `
+                        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <p style="color: #78350f; margin: 0;">
+                                <strong>⚠️ This section is currently ${section === activeSection ? 'active' : 'locked'}.</strong>
+                                ${section !== activeSection ? ' It will unlock based on your training schedule.' : ''}
+                            </p>
+                        </div>
+                    `;
+                }
 
                 training.checklist[section].forEach((item, index) => {
                     html += `
                         <div class="checklist-item ${item.completed ? 'completed' : ''}">
                             <input type="checkbox" 
                                    ${item.completed ? 'checked' : ''} 
+                                   ${status.locked ? 'disabled' : ''}
                                    onchange="toggleChecklistItem('${section}', ${index})">
                             <div class="checklist-item-content">
                                 <div class="checklist-item-header">
@@ -757,6 +923,7 @@
                                        class="signature-input" 
                                        placeholder="Staff Signature" 
                                        value="${item.signature || ''}"
+                                       ${status.locked ? 'disabled' : ''}
                                        onchange="updateSignature('${section}', ${index}, this.value)">
                             </div>
                         </div>
@@ -819,7 +986,8 @@
 
         function clearForm() {
             document.getElementById('trainingTitle').value = '';
-            document.getElementById('trainingDate').value = '';
+            document.getElementById('trainingStartDate').value = '';
+            document.getElementById('trainingEndDate').value = '';
             document.getElementById('checkerName').value = '';
             document.getElementById('venue').value = '';
         }
