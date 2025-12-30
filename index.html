@@ -121,17 +121,20 @@
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 15px;
             transition: border-color 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -381,6 +384,41 @@
             line-height: 1.6;
         }
 
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 padding: 20px;
@@ -406,6 +444,12 @@
         .hidden {
             display: none;
         }
+
+        .refresh-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -422,11 +466,11 @@
                     <button class="btn btn-primary" onclick="showCreateForm()">
                         ➕ Create New Training
                     </button>
+                    <button class="btn btn-secondary refresh-button" onclick="loadTrainings()">
+                        🔄 Refresh
+                    </button>
                     <button class="btn btn-secondary" onclick="exportAllData()">
                         📥 Export All Data
-                    </button>
-                    <button class="btn btn-secondary" onclick="importData()">
-                        📤 Import Data
                     </button>
                 </div>
 
@@ -527,9 +571,20 @@
         </div>
     </div>
 
-    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
 
     <script>
+        // Google Sheets Configuration - Pre-configured for team use
+        let sheetsConfig = {
+            url: 'https://script.google.com/macros/s/AKfycbxK1DKHl8Ti9NHsOHwmRjlmFsBu46mdCGspXdqn0Qowb19LllgVgApntcs9_dMhZ5lnjA/exec'
+        };
+
         // Data structure for checklist items
         const checklistData = {
             preTraining: {
@@ -589,14 +644,75 @@
         };
 
         // Application state
-        let trainings = JSON.parse(localStorage.getItem('trainings')) || [];
+        let trainings = [];
         let currentTrainingId = null;
         let editMode = false;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            showDashboard();
+            loadTrainings();
         });
+
+        // Google Sheets API Functions
+        async function loadTrainings() {
+            showLoading();
+            
+            try {
+                const response = await fetch(sheetsConfig.url);
+                
+                if (response.ok) {
+                    const text = await response.text();
+                    try {
+                        trainings = JSON.parse(text);
+                    } catch (e) {
+                        trainings = [];
+                    }
+                } else {
+                    throw new Error(`Error loading data: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error loading trainings:', error);
+                alert('Error loading data from Google Sheets. Please check your internet connection and try again.');
+            } finally {
+                hideLoading();
+                showDashboard();
+            }
+        }
+
+        async function saveToSheets() {
+            showLoading();
+            
+            try {
+                const formData = new FormData();
+                formData.append('data', JSON.stringify(trainings));
+
+                const response = await fetch(sheetsConfig.url, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    hideLoading();
+                    return true;
+                } else {
+                    throw new Error(`Error saving data: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error saving to Google Sheets:', error);
+                alert('Error saving data to Google Sheets. Please check your internet connection and try again.');
+                hideLoading();
+                return false;
+            }
+        }
+
+        // UI Functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
 
         // View Management
         function showDashboard() {
@@ -638,7 +754,7 @@
         }
 
         // Training Management
-        function saveTraining() {
+        async function saveTraining() {
             const title = document.getElementById('trainingTitle').value.trim();
             const startDate = document.getElementById('trainingStartDate').value;
             const endDate = document.getElementById('trainingEndDate').value;
@@ -650,14 +766,12 @@
                 return;
             }
 
-            // Validate that end date is not before start date
             if (new Date(endDate) < new Date(startDate)) {
                 alert('End date cannot be before start date!');
                 return;
             }
 
             if (editMode && currentTrainingId) {
-                // Update existing training
                 const training = trainings.find(t => t.id === currentTrainingId);
                 training.title = title;
                 training.startDate = startDate;
@@ -665,7 +779,6 @@
                 training.checkerName = checker;
                 training.venue = venue;
             } else {
-                // Create new training
                 const newTraining = {
                     id: Date.now(),
                     title: title,
@@ -679,8 +792,10 @@
                 trainings.push(newTraining);
             }
 
-            saveToLocalStorage();
-            showDashboard();
+            const success = await saveToSheets();
+            if (success) {
+                showDashboard();
+            }
         }
 
         function editTrainingInfo() {
@@ -700,14 +815,16 @@
             document.getElementById('createView').classList.remove('hidden');
         }
 
-        function deleteTraining() {
+        async function deleteTraining() {
             if (!confirm('Are you sure you want to delete this training? This action cannot be undone.')) {
                 return;
             }
 
             trainings = trainings.filter(t => t.id !== currentTrainingId);
-            saveToLocalStorage();
-            showDashboard();
+            const success = await saveToSheets();
+            if (success) {
+                showDashboard();
+            }
         }
 
         function initializeChecklist() {
@@ -724,7 +841,6 @@
             return checklist;
         }
 
-        // Determine active section based on current date and training dates
         function getActiveSection(training) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -736,13 +852,10 @@
             endDate.setHours(0, 0, 0, 0);
 
             if (today < startDate) {
-                // Before training starts - Pre-Training section is active
                 return 'preTraining';
             } else if (today >= startDate && today <= endDate) {
-                // During training - Training Day section is active
                 return 'trainingDay';
             } else {
-                // After training ends - Post Training section is active
                 return 'postTraining';
             }
         }
@@ -833,7 +946,6 @@
                 </div>
             `;
 
-            // Update phase info banner
             const activeSection = getActiveSection(training);
             const phaseInfo = document.getElementById('phaseInfo');
             const phaseTitle = document.getElementById('phaseTitle');
@@ -934,18 +1046,18 @@
         }
 
         // Checklist Item Management
-        function toggleChecklistItem(section, index) {
+        async function toggleChecklistItem(section, index) {
             const training = trainings.find(t => t.id === currentTrainingId);
             training.checklist[section][index].completed = !training.checklist[section][index].completed;
-            saveToLocalStorage();
+            await saveToSheets();
             renderChecklist(training);
             updateStats(training);
         }
 
-        function updateSignature(section, index, value) {
+        async function updateSignature(section, index, value) {
             const training = trainings.find(t => t.id === currentTrainingId);
             training.checklist[section][index].signature = value;
-            saveToLocalStorage();
+            await saveToSheets();
         }
 
         // Statistics
@@ -977,10 +1089,6 @@
         }
 
         // Data Management
-        function saveToLocalStorage() {
-            localStorage.setItem('trainings', JSON.stringify(trainings));
-        }
-
         function clearForm() {
             document.getElementById('trainingTitle').value = '';
             document.getElementById('trainingStartDate').value = '';
@@ -1012,41 +1120,6 @@
             link.download = `${training.title.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
             link.click();
             URL.revokeObjectURL(url);
-        }
-
-        function importData() {
-            document.getElementById('fileInput').click();
-        }
-
-        function handleFileImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    if (Array.isArray(data)) {
-                        // Importing multiple trainings
-                        trainings = [...trainings, ...data];
-                    } else if (data.id && data.title) {
-                        // Importing single training
-                        trainings.push(data);
-                    } else {
-                        throw new Error('Invalid data format');
-                    }
-
-                    saveToLocalStorage();
-                    showDashboard();
-                    alert('Data imported successfully!');
-                } catch (error) {
-                    alert('Error importing data. Please check the file format.');
-                    console.error(error);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
         }
     </script>
 </body>
