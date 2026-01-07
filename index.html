@@ -419,6 +419,15 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 padding: 20px;
@@ -527,6 +536,9 @@
                 </button>
 
                 <div class="actions-bar">
+                    <button class="btn btn-success" id="confirmChangesBtn" onclick="confirmChanges()" style="display: none;">
+                        ✅ Confirm Changes
+                    </button>
                     <button class="btn btn-primary" onclick="editTrainingInfo()">
                         ✏️ Edit Training Info
                     </button>
@@ -647,6 +659,10 @@
         let trainings = [];
         let currentTrainingId = null;
         let editMode = false;
+        let pendingChanges = false;
+        let tempChecklistState = {}; // Temporary storage for uncofirmed changes
+        let pendingChanges = false;
+        let autoSaveTimeout = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -1008,6 +1024,12 @@
                 const status = getSectionStatus(section, activeSection);
                 const sectionClass = status.locked ? 'locked' : '';
                 
+                // Sort items: incomplete first, then completed
+                const sectionItems = training.checklist[section].slice(); // Create a copy
+                const incompleteItems = sectionItems.filter(item => !item.completed);
+                const completedItems = sectionItems.filter(item => item.completed);
+                const sortedItems = [...incompleteItems, ...completedItems];
+                
                 html += `
                     <div class="checklist-section ${sectionClass}">
                         <h2>
@@ -1029,13 +1051,14 @@
                     `;
                 }
 
-                training.checklist[section].forEach((item, index) => {
+                sortedItems.forEach((item) => {
+                    const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
                     html += `
                         <div class="checklist-item ${item.completed ? 'completed' : ''}">
                             <input type="checkbox" 
                                    ${item.completed ? 'checked' : ''} 
                                    ${status.locked ? 'disabled' : ''}
-                                   onchange="toggleChecklistItem('${section}', ${index})">
+                                   onchange="toggleChecklistItem('${section}', ${originalIndex})">
                             <div class="checklist-item-content">
                                 <div class="checklist-item-header">
                                     <div class="checklist-item-title">${item.id}. ${item.action}</div>
@@ -1049,7 +1072,7 @@
                                        placeholder="Staff Signature" 
                                        value="${item.signature || ''}"
                                        ${status.locked ? 'disabled' : ''}
-                                       onchange="updateSignature('${section}', ${index}, this.value)">
+                                       onchange="updateSignature('${section}', ${originalIndex}, this.value)">
                             </div>
                         </div>
                     `;
@@ -1062,18 +1085,64 @@
         }
 
         // Checklist Item Management
-        async function toggleChecklistItem(section, index) {
+        function toggleChecklistItem(section, index) {
             const training = trainings.find(t => t.id === currentTrainingId);
             training.checklist[section][index].completed = !training.checklist[section][index].completed;
-            await saveToSheets();
+            
+            // Add completed date if checking
+            if (training.checklist[section][index].completed) {
+                training.checklist[section][index].completedDate = new Date().toLocaleString();
+            } else {
+                training.checklist[section][index].completedDate = '';
+            }
+            
+            markPendingChanges();
             renderChecklist(training);
             updateStats(training);
         }
 
-        async function updateSignature(section, index, value) {
+        function updateSignature(section, index, value) {
             const training = trainings.find(t => t.id === currentTrainingId);
             training.checklist[section][index].signature = value;
-            await saveToSheets();
+            markPendingChanges();
+        }
+
+        function markPendingChanges() {
+            pendingChanges = true;
+            const btn = document.getElementById('confirmChangesBtn');
+            if (btn) {
+                btn.style.display = 'inline-block';
+                btn.classList.add('pulse');
+            }
+        }
+
+        async function confirmChanges() {
+            const btn = document.getElementById('confirmChangesBtn');
+            btn.textContent = '💾 Saving...';
+            btn.disabled = true;
+            
+            const success = await saveToSheets();
+            
+            if (success) {
+                pendingChanges = false;
+                btn.style.display = 'none';
+                btn.textContent = '✅ Confirm Changes';
+                btn.disabled = false;
+                
+                // Show success message briefly
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Changes Saved!';
+                btn.style.display = 'inline-block';
+                btn.classList.remove('pulse');
+                
+                setTimeout(() => {
+                    btn.style.display = 'none';
+                    btn.textContent = originalText;
+                }, 2000);
+            } else {
+                btn.textContent = '✅ Confirm Changes';
+                btn.disabled = false;
+            }
         }
 
         // Statistics
