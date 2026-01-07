@@ -424,10 +424,6 @@
             50% { transform: scale(1.05); }
         }
 
-        .pulse {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
         @media (max-width: 768px) {
             .main-content {
                 padding: 20px;
@@ -1125,7 +1121,6 @@
             const btn = document.getElementById('confirmChangesBtn');
             if (btn) {
                 btn.style.display = 'inline-block';
-                btn.classList.add('pulse');
             }
         }
 
@@ -1146,7 +1141,6 @@
                 const originalText = btn.textContent;
                 btn.textContent = '✅ Changes Saved!';
                 btn.style.display = 'inline-block';
-                btn.classList.remove('pulse');
                 
                 setTimeout(() => {
                     btn.style.display = 'none';
