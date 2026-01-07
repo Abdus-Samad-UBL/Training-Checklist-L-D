@@ -787,11 +787,14 @@
 
         // Training Management
         async function saveTraining() {
+            console.log('=== Save Training Started ===');
             const title = document.getElementById('trainingTitle').value.trim();
             const startDate = document.getElementById('trainingStartDate').value;
             const endDate = document.getElementById('trainingEndDate').value;
             const checker = document.getElementById('checkerName').value.trim();
             const venue = document.getElementById('venue').value.trim();
+
+            console.log('Form values:', { title, startDate, endDate, checker, venue });
 
             if (!title || !startDate || !endDate || !checker || !venue) {
                 alert('Please fill in all required fields!');
@@ -804,6 +807,7 @@
             }
 
             if (editMode && currentTrainingId) {
+                console.log('Editing existing training:', currentTrainingId);
                 const training = trainings.find(t => t.id === currentTrainingId);
                 training.title = title;
                 training.startDate = startDate;
@@ -811,6 +815,7 @@
                 training.checkerName = checker;
                 training.venue = venue;
             } else {
+                console.log('Creating new training...');
                 const newTraining = {
                     id: Date.now(),
                     title: title,
@@ -821,13 +826,23 @@
                     createdAt: new Date().toISOString(),
                     checklist: initializeChecklist()
                 };
+                console.log('New training object:', newTraining);
                 trainings.push(newTraining);
+                console.log('Total trainings after push:', trainings.length);
             }
 
+            console.log('Calling saveToSheets...');
             const success = await saveToSheets();
+            console.log('saveToSheets result:', success);
+            
             if (success) {
+                console.log('Save successful, showing dashboard');
                 showDashboard();
+            } else {
+                console.log('Save failed');
+                alert('Failed to save training. Please check console for details.');
             }
+        }
         }
 
         function editTrainingInfo() {
@@ -866,7 +881,8 @@
                 checklist[section] = data.items.map(item => ({
                     ...item,
                     completed: false,
-                    signature: ''
+                    signature: '',
+                    completedDate: ''
                 }));
             }
 
