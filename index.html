@@ -5,19 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>L&D Training Checklist Manager</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -26,35 +20,21 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
-
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
-
-        .header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            padding: 30px;
-        }
-
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+        .main-content { padding: 30px; }
         .view-selector {
             display: flex;
             gap: 15px;
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
-
         .btn {
             padding: 12px 24px;
             border: none;
@@ -64,88 +44,50 @@
             transition: all 0.3s;
             font-weight: 600;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
         .form-section {
             background: #f9fafb;
             padding: 25px;
             border-radius: 12px;
             margin-bottom: 25px;
         }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
+        .form-group { margin-bottom: 20px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #374151;
         }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
+        .form-group input {
             width: 100%;
             padding: 12px;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 15px;
-            transition: border-color 0.3s;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
         }
-
         .training-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
             margin-top: 20px;
         }
-
         .training-card {
             background: white;
             border: 2px solid #e5e7eb;
@@ -154,25 +96,21 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-
         .training-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             border-color: #667eea;
         }
-
         .training-card h3 {
             color: #667eea;
             margin-bottom: 10px;
             font-size: 20px;
         }
-
         .training-card p {
             color: #6b7280;
             margin-bottom: 5px;
             font-size: 14px;
         }
-
         .training-card .progress {
             margin-top: 15px;
             background: #e5e7eb;
@@ -180,17 +118,12 @@
             border-radius: 4px;
             overflow: hidden;
         }
-
         .training-card .progress-bar {
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             height: 100%;
             transition: width 0.3s;
         }
-
-        .checklist-section {
-            margin-bottom: 30px;
-        }
-
+        .checklist-section { margin-bottom: 30px; }
         .checklist-section h2 {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -202,34 +135,20 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .checklist-section.locked {
             opacity: 0.5;
             pointer-events: none;
         }
-
         .checklist-section.locked h2 {
             background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
         }
-
         .section-status {
             font-size: 14px;
             padding: 6px 12px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
-
-        .section-status.active {
-            background: #10b981;
-        }
-
-        .section-status.locked {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
+        .section-status.active { background: #10b981; }
         .checklist-item {
             background: white;
             border: 2px solid #e5e7eb;
@@ -239,19 +158,15 @@
             display: flex;
             align-items: flex-start;
             gap: 15px;
-            transition: all 0.3s;
         }
-
         .checklist-item:hover {
             border-color: #667eea;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
         }
-
         .checklist-item.completed {
             background: #f0fdf4;
             border-color: #10b981;
         }
-
         .checklist-item input[type="checkbox"] {
             width: 24px;
             height: 24px;
@@ -259,29 +174,13 @@
             flex-shrink: 0;
             margin-top: 2px;
         }
-
-        .checklist-item-content {
-            flex: 1;
-        }
-
-        .checklist-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-            gap: 15px;
-        }
-
+        .checklist-item-content { flex: 1; }
         .checklist-item-title {
             font-weight: 600;
             color: #1f2937;
-            flex: 1;
+            margin-bottom: 8px;
         }
-
-        .checklist-item.completed .checklist-item-title {
-            color: #10b981;
-        }
-
+        .checklist-item.completed .checklist-item-title { color: #10b981; }
         .checklist-item-details {
             display: flex;
             gap: 20px;
@@ -289,14 +188,12 @@
             font-size: 13px;
             color: #6b7280;
         }
-
         .detail-badge {
             background: #f3f4f6;
             padding: 4px 12px;
             border-radius: 12px;
             font-weight: 500;
         }
-
         .signature-input {
             margin-top: 10px;
             padding: 8px;
@@ -306,21 +203,12 @@
             max-width: 300px;
             font-size: 14px;
         }
-
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
         .stats-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -328,42 +216,14 @@
             border-radius: 12px;
             text-align: center;
         }
-
-        .stat-card h3 {
-            font-size: 36px;
-            margin-bottom: 5px;
-        }
-
-        .stat-card p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
+        .stat-card h3 { font-size: 36px; margin-bottom: 5px; }
+        .stat-card p { font-size: 14px; opacity: 0.9; }
         .actions-bar {
             display: flex;
             gap: 15px;
             margin-bottom: 25px;
             flex-wrap: wrap;
         }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-        }
-
-        .empty-state svg {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .empty-state h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
         .info-box {
             background: #fef3c7;
             border-left: 4px solid #f59e0b;
@@ -371,19 +231,16 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
-
         .info-box h4 {
             color: #92400e;
             margin-bottom: 8px;
             font-size: 16px;
         }
-
         .info-box p {
             color: #78350f;
             font-size: 14px;
             line-height: 1.6;
         }
-
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -391,19 +248,17 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.7);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
         }
-
         .loading-content {
             background: white;
             padding: 30px;
             border-radius: 12px;
             text-align: center;
         }
-
         .spinner {
             border: 4px solid #f3f4f6;
             border-top: 4px solid #667eea;
@@ -413,47 +268,19 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .hidden { display: none !important; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
         }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 24px;
-            }
-
-            .training-list {
-                grid-template-columns: 1fr;
-            }
-
-            .checklist-item {
-                flex-direction: column;
-            }
-
-            .checklist-item-header {
-                flex-direction: column;
-            }
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .refresh-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -465,122 +292,72 @@
         </div>
 
         <div class="main-content">
-            <!-- Dashboard View -->
             <div id="dashboardView">
                 <div class="view-selector">
-                    <button class="btn btn-primary" onclick="showCreateForm()">
-                        ➕ Create New Training
-                    </button>
-                    <button class="btn btn-secondary refresh-button" onclick="loadTrainings()">
-                        🔄 Refresh
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportAllData()">
-                        📥 Export All Data
-                    </button>
+                    <button class="btn btn-primary" onclick="app.showCreateForm()">➕ Create New Training</button>
+                    <button class="btn btn-secondary" onclick="app.loadTrainings()">🔄 Refresh</button>
+                    <button class="btn btn-secondary" onclick="app.exportAllData()">📥 Export</button>
                 </div>
-
-                <div id="trainingListContainer">
-                    <h2 style="margin-bottom: 20px; color: #1f2937;">Your Training Sessions</h2>
-                    <div id="trainingList" class="training-list"></div>
-                </div>
+                <h2 style="margin-bottom: 20px; color: #1f2937;">Your Training Sessions</h2>
+                <div id="trainingList" class="training-list"></div>
             </div>
 
-            <!-- Create/Edit Training View -->
             <div id="createView" class="hidden">
-                <button class="btn btn-secondary back-button" onclick="showDashboard()">
-                    ← Back to Dashboard
-                </button>
-                
+                <button class="btn btn-secondary" onclick="app.showDashboard()" style="margin-bottom: 20px;">← Back</button>
                 <div class="form-section">
                     <h2 style="margin-bottom: 20px; color: #1f2937;" id="formTitle">Create New Training</h2>
-                    
                     <div class="form-group">
-                        <label for="trainingTitle">Training Title *</label>
-                        <input type="text" id="trainingTitle" placeholder="Enter training title" required>
+                        <label>Training Title *</label>
+                        <input type="text" id="trainingTitle" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="trainingStartDate">Training Start Date *</label>
+                        <label>Training Start Date *</label>
                         <input type="date" id="trainingStartDate" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="trainingEndDate">Training End Date *</label>
+                        <label>Training End Date *</label>
                         <input type="date" id="trainingEndDate" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="checkerName">Checker Name *</label>
-                        <input type="text" id="checkerName" placeholder="Enter checker name" required>
+                        <label>Checker Name *</label>
+                        <input type="text" id="checkerName" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="venue">Venue *</label>
-                        <input type="text" id="venue" placeholder="Enter venue" required>
+                        <label>Venue *</label>
+                        <input type="text" id="venue" required>
                     </div>
-
-                    <button class="btn btn-success" onclick="saveTraining()" style="width: 100%;">
-                        💾 Save Training
-                    </button>
+                    <button class="btn btn-success" onclick="app.saveTraining()" style="width: 100%;">💾 Save Training</button>
                 </div>
             </div>
 
-            <!-- Checklist View -->
             <div id="checklistView" class="hidden">
-                <button class="btn btn-secondary back-button" onclick="showDashboard()">
-                    ← Back to Dashboard
-                </button>
-
+                <button class="btn btn-secondary" onclick="app.showDashboard()" style="margin-bottom: 20px;">← Back</button>
                 <div class="actions-bar">
-                    <button class="btn btn-success" id="confirmChangesBtn" onclick="confirmChanges()" style="display: none;">
-                        ✅ Confirm Changes
-                    </button>
-                    <button class="btn btn-primary" onclick="editTrainingInfo()">
-                        ✏️ Edit Training Info
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportTrainingData()">
-                        📥 Export This Training
-                    </button>
-                    <button class="btn btn-danger" onclick="deleteTraining()">
-                        🗑️ Delete Training
-                    </button>
+                    <button class="btn btn-success hidden" id="confirmBtn" onclick="app.confirmChanges()">✅ Confirm Changes</button>
+                    <button class="btn btn-primary" onclick="app.editTrainingInfo()">✏️ Edit Info</button>
+                    <button class="btn btn-danger" onclick="app.deleteTraining()">🗑️ Delete</button>
                 </div>
-
                 <div id="trainingHeader" class="form-section"></div>
-
                 <div id="phaseInfo" class="info-box" style="display: none;">
-                    <h4 id="phaseTitle">📍 Current Phase</h4>
+                    <h4 id="phaseTitle"></h4>
                     <p id="phaseDescription"></p>
                 </div>
-
                 <div class="stats-section">
-                    <div class="stat-card">
-                        <h3 id="totalItems">0</h3>
-                        <p>Total Items</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="completedItems">0</h3>
-                        <p>Completed</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="progressPercentage">0%</h3>
-                        <p>Progress</p>
-                    </div>
+                    <div class="stat-card"><h3 id="totalItems">0</h3><p>Total Items</p></div>
+                    <div class="stat-card"><h3 id="completedItems">0</h3><p>Completed</p></div>
+                    <div class="stat-card"><h3 id="progressPercentage">0%</h3><p>Progress</p></div>
                 </div>
-
                 <div class="info-box">
                     <h4>📋 Dress Code Information</h4>
-                    <p><strong>Weekdays Training:</strong> Formal dress code as mentioned in Bank's dress code policy</p>
-                    <p><strong>Weekend Training:</strong> Smart Casual. Dress code guidelines should be attached in course announcement email.</p>
+                    <p><strong>Weekdays:</strong> Formal dress code as per Bank policy</p>
+                    <p><strong>Weekends:</strong> Smart Casual</p>
                 </div>
-
                 <div id="checklistContainer"></div>
             </div>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay hidden">
+    <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-content">
             <div class="spinner"></div>
             <p>Loading...</p>
@@ -588,631 +365,479 @@
     </div>
 
     <script>
-        // Google Sheets Configuration - Pre-configured for team use
-        let sheetsConfig = {
-            url: 'https://script.google.com/macros/s/AKfycbwxo1jPfAc_F32zXDhOIzni9XZuykzCTQH8UWzNsB6QScDW-iFzqJH8YTaBQiIFvCZY/exec'
-        };
+const app = {
+    sheetsUrl: 'https://script.google.com/macros/s/AKfycbwxo1jPfAc_F32zXDhOIzni9XZuykzCTQH8UWzNsB6QScDW-iFzqJH8YTaBQiIFvCZY/exec',
+    trainings: [],
+    currentTrainingId: null,
+    editMode: false,
+    pendingChanges: false,
 
-        // Data structure for checklist items
-        const checklistData = {
-            preTraining: {
-                title: "Pre-Training Arrangements",
-                items: [
-                    { id: 1, action: "Course announcement", timeline: "1 week before commencement of training", responsibility: "" },
-                    { id: 2, action: "Confirmation from trainer", timeline: "Confirmation email should be present", responsibility: "" },
-                    { id: 3, action: "Availability of course material", timeline: "Must be kept in repository", responsibility: "" },
-                    { id: 4, action: "Pre & Post Assessment Creation", timeline: "Mandatory!", responsibility: "" },
-                    { id: 5, action: "Confirmation of Nominations", timeline: "2-3 days before commencement of training", responsibility: "" },
-                    { id: 6, action: "Confirmation email to participants sent", timeline: "1 day before commencement of training", responsibility: "" },
-                    { id: 7, action: "Reminder email/ calender block to the Trainer", timeline: "1-2 days before commencement of training", responsibility: "" },
-                    { id: 8, action: "Transport Arrangements for Trainer (If applicable)", timeline: "2 days before commencement of training", responsibility: "" },
-                    { id: 9, action: "Hotel/ Transport arrangement for Trainer (External)", timeline: "Ensure arrangements are made via Travel Desk & relevant parties", responsibility: "" },
-                    { id: 10, action: "Hotel stay of the participant (If applicable)", timeline: "Ensure arrangements are made via Travel Desk & relevant parties", responsibility: "" },
-                    { id: 11, action: "Training Material Arrangements from Trainer (In case of special arrangements, approval is required)", timeline: "1 week before commencement of training", responsibility: "" },
-                    { id: 12, action: "Stationery Arrangement ", timeline: "Note-pads, flip charts, markers, white-board, pens)", responsibility: "" },
-                    { id: 13, action: "Handouts Arrangement", timeline: "To be printed 1-2 days before commencement of Training", responsibility: "" },
-                    { id: 14, action: "Seating arrangements", timeline: "As per facility or trainer preference", responsibility: "" },
-                    { id: 15, action: "Soft mints/candies/chocolates/snacks (If applicable)", timeline: "As per Trainer requirement - Must be informed beforehand", responsibility: "" },
-                    { id: 16, action: "Music/ Sound system/ Multimedia", timeline: "Speakers & microphone to be tested atleast 1-day before commencement of training", responsibility: "" },
-                    { id: 17, action: "Any other requirements", timeline: "Specify if any special request catered", responsibility: "" },
-                    { id: 18, action: "Classroom setting", timeline: "1 day before commencement of training", responsibility: "" },
-                    { id: 19, action: "Video conferencing + Link Creation of online training sessions (If applicable)", timeline: "Ensure link working properly", responsibility: "" },
-                    { id: 20, action: "Lunch/ Tea/ Refreshment arrangements", timeline: "1 day before commencement of training", responsibility: "" },
-                    { id: 21, action: "Photographer (If applicable)", timeline: "2 days before commencement of training", responsibility: "" },
-                    { id: 22, action: "Attendance sheet uploaded on shared folder", timeline: "1 day before commencement of training", responsibility: "" }
-                ]
-            },
-            trainingDay: {
-                title: "Training Day Arrangements",
-                items: [
-                    { id: 1, action: "Schedule of Tea-break/ Refreshments/ Lunch", timeline: "To be confirmed/ communicated from/ to trainer before start of training", responsibility: "" },
-                    { id: 2, action: "Handout distribution", timeline: "1 day before commencement or on training day", responsibility: "" },
-                    { id: 3, action: "Classroom setting", timeline: "Ensure before training commences", responsibility: "" },
-                    { id: 4, action: "Availability of training material in class", timeline: "Ensure before training commences", responsibility: "" },
-                    { id: 5, action: "Drinking water availability", timeline: "Ensure before training commences", responsibility: "" },
-                    { id: 6, action: "Air conditioning", timeline: "Ensure before training commences", responsibility: "" },
-                    { id: 7, action: "Installation of laptop for presentation", timeline: "Ensure before training commences", responsibility: "" },
-                    { id: 8, action: "Final Multimedia/ Sound system check", timeline: "Ensure before training commences", responsibility: "" },
-                    { id: 9, action: "Pre post test link", timeline: "To be shared at beginning of training session", responsibility: "" },
-                    { id: 10, action: "Feedback Form", timeline: "To be shared at day end", responsibility: "" },
-                    { id: 11, action: "Group Photograph", timeline: "Mandatory to be kept in digital copy", responsibility: "" },
-                    { id: 12, action: "Certificate printing on Standardised Format (If applicable)", timeline: "To be distributed on last day of training session", responsibility: "" }
-                ]
-            },
-            postTraining: {
-                title: "Post Training",
-                items: [
-                    { id: 1, action: "Thank you email to the participants and trainers", timeline: "1 Day after training", responsibility: "" },
-                    { id: 2, action: "Compilation of Pre/Post Assessment Results", timeline: "2-3 days after completion of training", responsibility: "" },
-                    { id: 3, action: "Compilation of Feedback Results", timeline: "2-3 days after training", responsibility: "" },
-                    { id: 4, action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week of the training", responsibility: "" },
-                    { id: 5, action: "Certificate Printing & Dispatch (If applicable)", timeline: "1 week after completion of training", responsibility: "" }
-                ]
+    checklistData: {
+        preTraining: {
+            title: "Pre-Training Arrangements",
+            items: [
+                { id: 1, action: "Course announcement", timeline: "1 week before" },
+                { id: 2, action: "Confirmation from trainer", timeline: "Confirmation email" },
+                { id: 3, action: "Availability of course material", timeline: "In repository" },
+                { id: 4, action: "Pre & Post Assessment Creation", timeline: "Mandatory" },
+                { id: 5, action: "Confirmation of Nominations", timeline: "2-3 days before" },
+                { id: 6, action: "Confirmation email to participants", timeline: "1 day before" },
+                { id: 7, action: "Reminder email to Trainer", timeline: "1-2 days before" },
+                { id: 8, action: "Transport Arrangements for Trainer", timeline: "2 days before" },
+                { id: 9, action: "Hotel arrangement for Trainer", timeline: "Via Travel Desk" },
+                { id: 10, action: "Hotel stay of participants", timeline: "Via Travel Desk" },
+                { id: 11, action: "Training Material Arrangements", timeline: "1 week before" },
+                { id: 12, action: "Stationery Arrangement", timeline: "Pads, charts, markers" },
+                { id: 13, action: "Handouts Arrangement", timeline: "1-2 days before" },
+                { id: 14, action: "Seating arrangements", timeline: "As per facility" },
+                { id: 15, action: "Soft mints/candies/snacks", timeline: "As per requirement" },
+                { id: 16, action: "Music/Sound system/Multimedia", timeline: "Test 1 day before" },
+                { id: 17, action: "Any other requirements", timeline: "Specify if needed" },
+                { id: 18, action: "Classroom setting", timeline: "1 day before" },
+                { id: 19, action: "Video conferencing + Link", timeline: "Ensure working" },
+                { id: 20, action: "Lunch/Tea/Refreshments", timeline: "1 day before" },
+                { id: 21, action: "Photographer", timeline: "2 days before" },
+                { id: 22, action: "Attendance sheet uploaded", timeline: "1 day before" }
+            ]
+        },
+        trainingDay: {
+            title: "Training Day Arrangements",
+            items: [
+                { id: 1, action: "Schedule of Tea/Lunch", timeline: "Confirm with trainer" },
+                { id: 2, action: "Handout distribution", timeline: "On training day" },
+                { id: 3, action: "Classroom setting", timeline: "Before training" },
+                { id: 4, action: "Training material in class", timeline: "Before training" },
+                { id: 5, action: "Drinking water", timeline: "Before training" },
+                { id: 6, action: "Air conditioning", timeline: "Before training" },
+                { id: 7, action: "Laptop for presentation", timeline: "Before training" },
+                { id: 8, action: "Multimedia/Sound check", timeline: "Before training" },
+                { id: 9, action: "Pre/post test link", timeline: "At beginning" },
+                { id: 10, action: "Feedback Form", timeline: "At day end" },
+                { id: 11, action: "Group Photograph", timeline: "Mandatory digital copy" },
+                { id: 12, action: "Certificate printing", timeline: "Last day" }
+            ]
+        },
+        postTraining: {
+            title: "Post Training",
+            items: [
+                { id: 1, action: "Thank you email", timeline: "1 day after" },
+                { id: 2, action: "Pre/Post Assessment Results", timeline: "2-3 days after" },
+                { id: 3, action: "Compilation of Feedback", timeline: "2-3 days after" },
+                { id: 4, action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week" },
+                { id: 5, action: "Certificate Printing & Dispatch", timeline: "1 week after" }
+            ]
+        }
+    },
+
+    init() {
+        document.addEventListener('DOMContentLoaded', () => this.loadTrainings());
+    },
+
+    showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    },
+
+    hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    },
+
+    async loadTrainings() {
+        this.showLoading();
+        try {
+            const response = await fetch(this.sheetsUrl);
+            if (response.ok) {
+                const text = await response.text();
+                this.trainings = JSON.parse(text);
             }
-        };
+        } catch (error) {
+            console.error('Load error:', error);
+            alert('Error loading data. Check console.');
+        }
+        this.hideLoading();
+        this.showDashboard();
+    },
 
-        // Application state
-        let trainings = [];
-        let currentTrainingId = null;
-        let editMode = false;
-        let pendingChanges = false;
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadTrainings();
-        });
-
-        // Google Sheets API Functions
-        async function loadTrainings() {
-            showLoading();
-            
-            try {
-                console.log('Attempting to load from:', sheetsConfig.url);
-                const response = await fetch(sheetsConfig.url);
-                
-                console.log('Response status:', response.status);
-                console.log('Response ok:', response.ok);
-                
-                if (response.ok) {
-                    const text = await response.text();
-                    console.log('Response text:', text);
-                    try {
-                        trainings = JSON.parse(text);
-                        console.log('Loaded trainings:', trainings);
-                    } catch (e) {
-                        console.log('JSON parse error, initializing empty array');
-                        trainings = [];
-                    }
-                } else {
-                    const errorText = await response.text();
-                    console.error('Response error:', errorText);
-                    throw new Error(`Error loading data: ${response.status} - ${errorText}`);
-                }
-            } catch (error) {
-                console.error('Error loading trainings:', error);
-                alert(`Error loading data from Google Sheets.\n\nDetails: ${error.message}\n\nPlease check:\n1. Is the Google Apps Script deployed?\n2. Is "Who has access" set to "Anyone"?\n3. Did you authorize the script?\n\nOpen browser console (F12) for more details.`);
-            } finally {
-                hideLoading();
-                showDashboard();
+    async saveToSheets() {
+        this.showLoading();
+        try {
+            const formData = new FormData();
+            formData.append('data', JSON.stringify(this.trainings));
+            const response = await fetch(this.sheetsUrl, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                this.hideLoading();
+                return true;
             }
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Error saving data. Check console.');
+        }
+        this.hideLoading();
+        return false;
+    },
+
+    showDashboard() {
+        document.getElementById('dashboardView').classList.remove('hidden');
+        document.getElementById('createView').classList.add('hidden');
+        document.getElementById('checklistView').classList.add('hidden');
+        this.renderTrainingList();
+    },
+
+    showCreateForm() {
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('createView').classList.remove('hidden');
+        document.getElementById('checklistView').classList.add('hidden');
+        document.getElementById('formTitle').textContent = 'Create New Training';
+        this.clearForm();
+        this.editMode = false;
+        this.currentTrainingId = null;
+    },
+
+    showChecklist(trainingId) {
+        this.currentTrainingId = trainingId;
+        const training = this.trainings.find(t => t.id === trainingId);
+        if (!training) return;
+
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('createView').classList.add('hidden');
+        document.getElementById('checklistView').classList.remove('hidden');
+        
+        this.renderTrainingHeader(training);
+        this.renderChecklist(training);
+        this.updateStats(training);
+    },
+
+    async saveTraining() {
+        const title = document.getElementById('trainingTitle').value.trim();
+        const startDate = document.getElementById('trainingStartDate').value;
+        const endDate = document.getElementById('trainingEndDate').value;
+        const checker = document.getElementById('checkerName').value.trim();
+        const venue = document.getElementById('venue').value.trim();
+
+        if (!title || !startDate || !endDate || !checker || !venue) {
+            alert('Please fill all fields!');
+            return;
         }
 
-        async function saveToSheets() {
-            showLoading();
-            
-            try {
-                console.log('Attempting to save to:', sheetsConfig.url);
-                const formData = new FormData();
-                formData.append('data', JSON.stringify(trainings));
-
-                const response = await fetch(sheetsConfig.url, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                console.log('Save response status:', response.status);
-
-                if (response.ok) {
-                    const result = await response.text();
-                    console.log('Save result:', result);
-                    hideLoading();
-                    return true;
-                } else {
-                    const errorText = await response.text();
-                    console.error('Save error:', errorText);
-                    throw new Error(`Error saving data: ${response.status} - ${errorText}`);
-                }
-            } catch (error) {
-                console.error('Error saving to Google Sheets:', error);
-                alert(`Error saving data to Google Sheets.\n\nDetails: ${error.message}\n\nPlease check:\n1. Is the Google Apps Script deployed?\n2. Is "Who has access" set to "Anyone"?\n3. Did you authorize the script?\n\nOpen browser console (F12) for more details.`);
-                hideLoading();
-                return false;
-            }
+        if (new Date(endDate) < new Date(startDate)) {
+            alert('End date cannot be before start date!');
+            return;
         }
 
-        // UI Functions
-        function showLoading() {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
+        if (this.editMode && this.currentTrainingId) {
+            const training = this.trainings.find(t => t.id === this.currentTrainingId);
+            training.title = title;
+            training.startDate = startDate;
+            training.endDate = endDate;
+            training.checkerName = checker;
+            training.venue = venue;
+        } else {
+            const newTraining = {
+                id: Date.now(),
+                title: title,
+                startDate: startDate,
+                endDate: endDate,
+                checkerName: checker,
+                venue: venue,
+                createdAt: new Date().toISOString(),
+                checklist: this.initializeChecklist()
+            };
+            this.trainings.push(newTraining);
         }
 
-        function hideLoading() {
-            document.getElementById('loadingOverlay').classList.add('hidden');
+        const success = await this.saveToSheets();
+        if (success) this.showDashboard();
+    },
+
+    initializeChecklist() {
+        const checklist = {};
+        for (const [section, data] of Object.entries(this.checklistData)) {
+            checklist[section] = data.items.map(item => ({
+                ...item,
+                completed: false,
+                signature: '',
+                completedDate: ''
+            }));
+        }
+        return checklist;
+    },
+
+    editTrainingInfo() {
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training) return;
+
+        this.editMode = true;
+        document.getElementById('trainingTitle').value = training.title;
+        document.getElementById('trainingStartDate').value = training.startDate;
+        document.getElementById('trainingEndDate').value = training.endDate;
+        document.getElementById('checkerName').value = training.checkerName;
+        document.getElementById('venue').value = training.venue;
+        document.getElementById('formTitle').textContent = 'Edit Training';
+
+        this.showCreateForm();
+    },
+
+    async deleteTraining() {
+        if (!confirm('Delete this training?')) return;
+        this.trainings = this.trainings.filter(t => t.id !== this.currentTrainingId);
+        const success = await this.saveToSheets();
+        if (success) this.showDashboard();
+    },
+
+    getActiveSection(training) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(training.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(training.endDate);
+        endDate.setHours(0, 0, 0, 0);
+
+        if (today < startDate) return 'preTraining';
+        if (today >= startDate && today <= endDate) return 'trainingDay';
+        return 'postTraining';
+    },
+
+    getSectionStatus(sectionKey, activeSection) {
+        if (sectionKey === activeSection) {
+            return { locked: false, label: '🔓 Active Now' };
+        }
+        const sectionOrder = ['preTraining', 'trainingDay', 'postTraining'];
+        const activeSectionIndex = sectionOrder.indexOf(activeSection);
+        const currentSectionIndex = sectionOrder.indexOf(sectionKey);
+        
+        if (currentSectionIndex < activeSectionIndex) {
+            return { locked: true, label: '✅ Completed' };
+        }
+        return { locked: true, label: '🔒 Locked' };
+    },
+
+    renderTrainingList() {
+        const container = document.getElementById('trainingList');
+        if (this.trainings.length === 0) {
+            container.innerHTML = '<div class="empty-state"><h3>No trainings yet</h3><p>Create your first training</p></div>';
+            return;
         }
 
-        // View Management
-        function showDashboard() {
-            hideAllViews();
-            document.getElementById('dashboardView').classList.remove('hidden');
-            renderTrainingList();
-        }
-
-        function showCreateForm() {
-            hideAllViews();
-            document.getElementById('createView').classList.remove('hidden');
-            document.getElementById('formTitle').textContent = 'Create New Training';
-            clearForm();
-            editMode = false;
-            currentTrainingId = null;
-        }
-
-        function showChecklist(trainingId) {
-            currentTrainingId = trainingId;
-            const training = trainings.find(t => t.id === trainingId);
-            
-            if (!training) {
-                alert('Training not found!');
-                return;
-            }
-
-            hideAllViews();
-            document.getElementById('checklistView').classList.remove('hidden');
-            
-            renderTrainingHeader(training);
-            renderChecklist(training);
-            updateStats(training);
-        }
-
-        function hideAllViews() {
-            document.getElementById('dashboardView').classList.add('hidden');
-            document.getElementById('createView').classList.add('hidden');
-            document.getElementById('checklistView').classList.add('hidden');
-        }
-
-        // Training Management
-        async function saveTraining() {
-            console.log('=== Save Training Started ===');
-            const title = document.getElementById('trainingTitle').value.trim();
-            const startDate = document.getElementById('trainingStartDate').value;
-            const endDate = document.getElementById('trainingEndDate').value;
-            const checker = document.getElementById('checkerName').value.trim();
-            const venue = document.getElementById('venue').value.trim();
-
-            console.log('Form values:', { title, startDate, endDate, checker, venue });
-
-            if (!title || !startDate || !endDate || !checker || !venue) {
-                alert('Please fill in all required fields!');
-                return;
-            }
-
-            if (new Date(endDate) < new Date(startDate)) {
-                alert('End date cannot be before start date!');
-                return;
-            }
-
-            if (editMode && currentTrainingId) {
-                console.log('Editing existing training:', currentTrainingId);
-                const training = trainings.find(t => t.id === currentTrainingId);
-                training.title = title;
-                training.startDate = startDate;
-                training.endDate = endDate;
-                training.checkerName = checker;
-                training.venue = venue;
-            } else {
-                console.log('Creating new training...');
-                const newTraining = {
-                    id: Date.now(),
-                    title: title,
-                    startDate: startDate,
-                    endDate: endDate,
-                    checkerName: checker,
-                    venue: venue,
-                    createdAt: new Date().toISOString(),
-                    checklist: initializeChecklist()
-                };
-                console.log('New training object:', newTraining);
-                trainings.push(newTraining);
-                console.log('Total trainings after push:', trainings.length);
-            }
-
-            console.log('Calling saveToSheets...');
-            const success = await saveToSheets();
-            console.log('saveToSheets result:', success);
-            
-            if (success) {
-                console.log('Save successful, showing dashboard');
-                showDashboard();
-            } else {
-                console.log('Save failed');
-                alert('Failed to save training. Please check console for details.');
-            }
-        }
-        }
-
-        function editTrainingInfo() {
-            const training = trainings.find(t => t.id === currentTrainingId);
-            if (!training) return;
-
-            editMode = true;
-            
-            document.getElementById('trainingTitle').value = training.title;
-            document.getElementById('trainingStartDate').value = training.startDate;
-            document.getElementById('trainingEndDate').value = training.endDate;
-            document.getElementById('checkerName').value = training.checkerName;
-            document.getElementById('venue').value = training.venue;
-            document.getElementById('formTitle').textContent = 'Edit Training Information';
-
-            hideAllViews();
-            document.getElementById('createView').classList.remove('hidden');
-        }
-
-        async function deleteTraining() {
-            if (!confirm('Are you sure you want to delete this training? This action cannot be undone.')) {
-                return;
-            }
-
-            trainings = trainings.filter(t => t.id !== currentTrainingId);
-            const success = await saveToSheets();
-            if (success) {
-                showDashboard();
-            }
-        }
-
-        function initializeChecklist() {
-            const checklist = {};
-            
-            for (const [section, data] of Object.entries(checklistData)) {
-                checklist[section] = data.items.map(item => ({
-                    ...item,
-                    completed: false,
-                    signature: '',
-                    completedDate: ''
-                }));
-            }
-
-            return checklist;
-        }
-
-        function getActiveSection(training) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const startDate = new Date(training.startDate);
-            startDate.setHours(0, 0, 0, 0);
-            
-            const endDate = new Date(training.endDate);
-            endDate.setHours(0, 0, 0, 0);
-
-            if (today < startDate) {
-                return 'preTraining';
-            } else if (today >= startDate && today <= endDate) {
-                return 'trainingDay';
-            } else {
-                return 'postTraining';
-            }
-        }
-
-        function getSectionStatus(sectionKey, activeSection) {
-            if (sectionKey === activeSection) {
-                return { locked: false, label: '🔓 Active Now' };
-            } else {
-                const sectionOrder = ['preTraining', 'trainingDay', 'postTraining'];
-                const activeSectionIndex = sectionOrder.indexOf(activeSection);
-                const currentSectionIndex = sectionOrder.indexOf(sectionKey);
-                
-                if (currentSectionIndex < activeSectionIndex) {
-                    return { locked: true, label: '✅ Completed Phase' };
-                } else {
-                    return { locked: true, label: '🔒 Locked' };
-                }
-            }
-        }
-
-        // Rendering Functions
-        function renderTrainingList() {
-            const container = document.getElementById('trainingList');
-            
-            if (trainings.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <h3>No Training Sessions Yet</h3>
-                        <p>Click "Create New Training" to get started</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = trainings.map(training => {
-                const progress = calculateProgress(training);
-                const startDate = new Date(training.startDate).toLocaleDateString();
-                const endDate = new Date(training.endDate).toLocaleDateString();
-                const activeSection = getActiveSection(training);
-                const sectionNames = {
-                    'preTraining': 'Pre-Training Phase',
-                    'trainingDay': 'Training Day Phase',
-                    'postTraining': 'Post-Training Phase'
-                };
-                
-                return `
-                    <div class="training-card" onclick="showChecklist(${training.id})">
-                        <h3>${training.title}</h3>
-                        <p><strong>Start:</strong> ${startDate}</p>
-                        <p><strong>End:</strong> ${endDate}</p>
-                        <p><strong>Venue:</strong> ${training.venue}</p>
-                        <p><strong>Checker:</strong> ${training.checkerName}</p>
-                        <p style="color: #667eea; font-weight: 600; margin-top: 8px;">
-                            📍 ${sectionNames[activeSection]}
-                        </p>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: ${progress}%"></div>
-                        </div>
-                        <p style="margin-top: 10px; text-align: center; font-weight: 600;">${progress}% Complete</p>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderTrainingHeader(training) {
-            const header = document.getElementById('trainingHeader');
+        container.innerHTML = this.trainings.map(training => {
+            const progress = this.calculateProgress(training);
             const startDate = new Date(training.startDate).toLocaleDateString();
             const endDate = new Date(training.endDate).toLocaleDateString();
+            const activeSection = this.getActiveSection(training);
+            const sectionNames = {
+                'preTraining': 'Pre-Training',
+                'trainingDay': 'Training Day',
+                'postTraining': 'Post-Training'
+            };
             
-            header.innerHTML = `
-                <h2 style="color: #667eea; margin-bottom: 15px;">${training.title}</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div>
-                        <strong>Start Date:</strong> ${startDate}
+            return `
+                <div class="training-card" onclick="app.showChecklist(${training.id})">
+                    <h3>${training.title}</h3>
+                    <p><strong>Start:</strong> ${startDate}</p>
+                    <p><strong>End:</strong> ${endDate}</p>
+                    <p><strong>Venue:</strong> ${training.venue}</p>
+                    <p><strong>Checker:</strong> ${training.checkerName}</p>
+                    <p style="color: #667eea; font-weight: 600; margin-top: 8px;">📍 ${sectionNames[activeSection]}</p>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: ${progress}%"></div>
                     </div>
-                    <div>
-                        <strong>End Date:</strong> ${endDate}
-                    </div>
-                    <div>
-                        <strong>Venue:</strong> ${training.venue}
-                    </div>
-                    <div>
-                        <strong>Checker:</strong> ${training.checkerName}
-                    </div>
+                    <p style="margin-top: 10px; text-align: center; font-weight: 600;">${progress}% Complete</p>
                 </div>
             `;
+        }).join('');
+    },
 
-            const activeSection = getActiveSection(training);
-            const phaseInfo = document.getElementById('phaseInfo');
-            const phaseTitle = document.getElementById('phaseTitle');
-            const phaseDescription = document.getElementById('phaseDescription');
-            
-            phaseInfo.style.display = 'block';
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const start = new Date(training.startDate);
-            start.setHours(0, 0, 0, 0);
-            const end = new Date(training.endDate);
-            end.setHours(0, 0, 0, 0);
+    renderTrainingHeader(training) {
+        const header = document.getElementById('trainingHeader');
+        const startDate = new Date(training.startDate).toLocaleDateString();
+        const endDate = new Date(training.endDate).toLocaleDateString();
+        
+        header.innerHTML = `
+            <h2 style="color: #667eea; margin-bottom: 15px;">${training.title}</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div><strong>Start:</strong> ${startDate}</div>
+                <div><strong>End:</strong> ${endDate}</div>
+                <div><strong>Venue:</strong> ${training.venue}</div>
+                <div><strong>Checker:</strong> ${training.checkerName}</div>
+            </div>
+        `;
 
-            if (activeSection === 'preTraining') {
-                const daysUntil = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
-                phaseTitle.textContent = '📍 Pre-Training Phase';
-                phaseDescription.textContent = `You are currently in the Pre-Training phase. The training starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}. Only Pre-Training Arrangements section is active.`;
-                phaseInfo.style.background = '#dbeafe';
-                phaseInfo.style.borderLeft = '4px solid #3b82f6';
-                phaseDescription.style.color = '#1e3a8a';
-            } else if (activeSection === 'trainingDay') {
-                phaseTitle.textContent = '📍 Training Day Phase';
-                phaseDescription.textContent = 'The training is currently in progress. Only Training Day section is active. Pre-Training section is now locked.';
-                phaseInfo.style.background = '#dcfce7';
-                phaseInfo.style.borderLeft = '4px solid #10b981';
-                phaseDescription.style.color = '#14532d';
-            } else {
-                const daysSince = Math.ceil((today - end) / (1000 * 60 * 60 * 24));
-                phaseTitle.textContent = '📍 Post-Training Phase';
-                phaseDescription.textContent = `The training ended ${daysSince} day${daysSince !== 1 ? 's' : ''} ago. Only Post-Training section is active. Previous sections are now locked.`;
-                phaseInfo.style.background = '#f3e8ff';
-                phaseInfo.style.borderLeft = '4px solid #a855f7';
-                phaseDescription.style.color = '#581c87';
-            }
+        const activeSection = this.getActiveSection(training);
+        const phaseInfo = document.getElementById('phaseInfo');
+        const phaseTitle = document.getElementById('phaseTitle');
+        const phaseDescription = document.getElementById('phaseDescription');
+        
+        phaseInfo.style.display = 'block';
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const start = new Date(training.startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(training.endDate);
+        end.setHours(0, 0, 0, 0);
+
+        if (activeSection === 'preTraining') {
+            const daysUntil = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+            phaseTitle.textContent = '📍 Pre-Training Phase';
+            phaseDescription.textContent = `Training starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+            phaseInfo.style.background = '#dbeafe';
+            phaseInfo.style.borderLeft = '4px solid #3b82f6';
+        } else if (activeSection === 'trainingDay') {
+            phaseTitle.textContent = '📍 Training Day Phase';
+            phaseDescription.textContent = 'Training is in progress';
+            phaseInfo.style.background = '#dcfce7';
+            phaseInfo.style.borderLeft = '4px solid #10b981';
+        } else {
+            const daysSince = Math.ceil((today - end) / (1000 * 60 * 60 * 24));
+            phaseTitle.textContent = '📍 Post-Training Phase';
+            phaseDescription.textContent = `Training ended ${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
+            phaseInfo.style.background = '#f3e8ff';
+            phaseInfo.style.borderLeft = '4px solid #a855f7';
         }
+    },
 
-        function renderChecklist(training) {
-            const container = document.getElementById('checklistContainer');
-            const activeSection = getActiveSection(training);
-            let html = '';
+    renderChecklist(training) {
+        const container = document.getElementById('checklistContainer');
+        const activeSection = this.getActiveSection(training);
+        let html = '';
 
-            for (const [section, data] of Object.entries(checklistData)) {
-                const status = getSectionStatus(section, activeSection);
-                const sectionClass = status.locked ? 'locked' : '';
-                
-                // Sort items: incomplete first, then completed
-                const sectionItems = training.checklist[section].slice(); // Create a copy
-                const incompleteItems = sectionItems.filter(item => !item.completed);
-                const completedItems = sectionItems.filter(item => item.completed);
-                const sortedItems = [...incompleteItems, ...completedItems];
-                
+        for (const [section, data] of Object.entries(this.checklistData)) {
+            const status = this.getSectionStatus(section, activeSection);
+            const sectionClass = status.locked ? 'locked' : '';
+            
+            const sectionItems = training.checklist[section].slice();
+            const incompleteItems = sectionItems.filter(item => !item.completed);
+            const completedItems = sectionItems.filter(item => item.completed);
+            const sortedItems = [...incompleteItems, ...completedItems];
+            
+            html += `
+                <div class="checklist-section ${sectionClass}">
+                    <h2>
+                        <span>${data.title}</span>
+                        <span class="section-status ${status.locked ? '' : 'active'}">${status.label}</span>
+                    </h2>
+            `;
+
+            sortedItems.forEach((item) => {
+                const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
                 html += `
-                    <div class="checklist-section ${sectionClass}">
-                        <h2>
-                            <span>${data.title}</span>
-                            <span class="section-status ${status.locked ? 'locked' : 'active'}">
-                                ${status.label}
-                            </span>
-                        </h2>
-                `;
-
-                if (status.locked) {
-                    html += `
-                        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                            <p style="color: #78350f; margin: 0;">
-                                <strong>⚠️ This section is currently ${section === activeSection ? 'active' : 'locked'}.</strong>
-                                ${section !== activeSection ? ' It will unlock based on your training schedule.' : ''}
-                            </p>
-                        </div>
-                    `;
-                }
-
-                sortedItems.forEach((item) => {
-                    const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
-                    html += `
-                        <div class="checklist-item ${item.completed ? 'completed' : ''}">
-                            <input type="checkbox" 
-                                   ${item.completed ? 'checked' : ''} 
-                                   ${status.locked ? 'disabled' : ''}
-                                   onchange="toggleChecklistItem('${section}', ${originalIndex})">
-                            <div class="checklist-item-content">
-                                <div class="checklist-item-header">
-                                    <div class="checklist-item-title">${item.id}. ${item.action}</div>
-                                </div>
-                                <div class="checklist-item-details">
-                                    ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
-                                    ${item.responsibility ? `<span class="detail-badge">👤 ${item.responsibility}</span>` : ''}
-                                </div>
-                                <input type="text" 
-                                       class="signature-input" 
-                                       placeholder="Staff Signature" 
-                                       value="${item.signature || ''}"
-                                       ${status.locked ? 'disabled' : ''}
-                                       onchange="updateSignature('${section}', ${originalIndex}, this.value)">
+                    <div class="checklist-item ${item.completed ? 'completed' : ''}">
+                        <input type="checkbox" 
+                               ${item.completed ? 'checked' : ''} 
+                               ${status.locked ? 'disabled' : ''}
+                               onchange="app.toggleChecklistItem('${section}', ${originalIndex})">
+                        <div class="checklist-item-content">
+                            <div class="checklist-item-title">${item.id}. ${item.action}</div>
+                            <div class="checklist-item-details">
+                                ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
                             </div>
+                            <input type="text" 
+                                   class="signature-input" 
+                                   placeholder="Staff Signature" 
+                                   value="${item.signature || ''}"
+                                   ${status.locked ? 'disabled' : ''}
+                                   onchange="app.updateSignature('${section}', ${originalIndex}, this.value)">
                         </div>
-                    `;
-                });
+                    </div>
+                `;
+            });
 
-                html += `</div>`;
-            }
-
-            container.innerHTML = html;
+            html += `</div>`;
         }
 
-        // Checklist Item Management
-        function toggleChecklistItem(section, index) {
-            const training = trainings.find(t => t.id === currentTrainingId);
-            training.checklist[section][index].completed = !training.checklist[section][index].completed;
-            
-            // Add completed date if checking
-            if (training.checklist[section][index].completed) {
-                training.checklist[section][index].completedDate = new Date().toLocaleString();
-            } else {
-                training.checklist[section][index].completedDate = '';
-            }
-            
-            markPendingChanges();
-            renderChecklist(training);
-            updateStats(training);
+        container.innerHTML = html;
+    },
+
+    toggleChecklistItem(section, index) {
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        training.checklist[section][index].completed = !training.checklist[section][index].completed;
+        
+        if (training.checklist[section][index].completed) {
+            training.checklist[section][index].completedDate = new Date().toLocaleString();
+        } else {
+            training.checklist[section][index].completedDate = '';
         }
+        
+        this.markPendingChanges();
+        this.renderChecklist(training);
+        this.updateStats(training);
+    },
 
-        function updateSignature(section, index, value) {
-            const training = trainings.find(t => t.id === currentTrainingId);
-            training.checklist[section][index].signature = value;
-            markPendingChanges();
+    updateSignature(section, index, value) {
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        training.checklist[section][index].signature = value;
+        this.markPendingChanges();
+    },
+
+    markPendingChanges() {
+        this.pendingChanges = true;
+        document.getElementById('confirmBtn').classList.remove('hidden');
+    },
+
+    async confirmChanges() {
+        const btn = document.getElementById('confirmBtn');
+        btn.textContent = '💾 Saving...';
+        btn.disabled = true;
+        
+        const success = await this.saveToSheets();
+        
+        if (success) {
+            this.pendingChanges = false;
+            btn.classList.add('hidden');
+            btn.textContent = '✅ Confirm Changes';
+            btn.disabled = false;
+            alert('Changes saved successfully!');
+        } else {
+            btn.textContent = '✅ Confirm Changes';
+            btn.disabled = false;
         }
+    },
 
-        function markPendingChanges() {
-            pendingChanges = true;
-            const btn = document.getElementById('confirmChangesBtn');
-            if (btn) {
-                btn.style.display = 'inline-block';
-            }
+    calculateProgress(training) {
+        let total = 0;
+        let completed = 0;
+        for (const section of Object.values(training.checklist)) {
+            total += section.length;
+            completed += section.filter(item => item.completed).length;
         }
+        return total > 0 ? Math.round((completed / total) * 100) : 0;
+    },
 
-        async function confirmChanges() {
-            const btn = document.getElementById('confirmChangesBtn');
-            btn.textContent = '💾 Saving...';
-            btn.disabled = true;
-            
-            const success = await saveToSheets();
-            
-            if (success) {
-                pendingChanges = false;
-                btn.style.display = 'none';
-                btn.textContent = '✅ Confirm Changes';
-                btn.disabled = false;
-                
-                // Show success message briefly
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Changes Saved!';
-                btn.style.display = 'inline-block';
-                
-                setTimeout(() => {
-                    btn.style.display = 'none';
-                    btn.textContent = originalText;
-                }, 2000);
-            } else {
-                btn.textContent = '✅ Confirm Changes';
-                btn.disabled = false;
-            }
+    updateStats(training) {
+        let total = 0;
+        let completed = 0;
+        for (const section of Object.values(training.checklist)) {
+            total += section.length;
+            completed += section.filter(item => item.completed).length;
         }
+        document.getElementById('totalItems').textContent = total;
+        document.getElementById('completedItems').textContent = completed;
+        document.getElementById('progressPercentage').textContent = 
+            total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
+    },
 
-        // Statistics
-        function calculateProgress(training) {
-            let total = 0;
-            let completed = 0;
+    clearForm() {
+        document.getElementById('trainingTitle').value = '';
+        document.getElementById('trainingStartDate').value = '';
+        document.getElementById('trainingEndDate').value = '';
+        document.getElementById('checkerName').value = '';
+        document.getElementById('venue').value = '';
+    },
 
-            for (const section of Object.values(training.checklist)) {
-                total += section.length;
-                completed += section.filter(item => item.completed).length;
-            }
+    exportAllData() {
+        const dataStr = JSON.stringify(this.trainings, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `training-data-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+};
 
-            return total > 0 ? Math.round((completed / total) * 100) : 0;
-        }
-
-        function updateStats(training) {
-            let total = 0;
-            let completed = 0;
-
-            for (const section of Object.values(training.checklist)) {
-                total += section.length;
-                completed += section.filter(item => item.completed).length;
-            }
-
-            document.getElementById('totalItems').textContent = total;
-            document.getElementById('completedItems').textContent = completed;
-            document.getElementById('progressPercentage').textContent = 
-                total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
-        }
-
-        // Data Management
-        function clearForm() {
-            document.getElementById('trainingTitle').value = '';
-            document.getElementById('trainingStartDate').value = '';
-            document.getElementById('trainingEndDate').value = '';
-            document.getElementById('checkerName').value = '';
-            document.getElementById('venue').value = '';
-        }
-
-        function exportAllData() {
-            const dataStr = JSON.stringify(trainings, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `training-checklists-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function exportTrainingData() {
-            const training = trainings.find(t => t.id === currentTrainingId);
-            if (!training) return;
-
-            const dataStr = JSON.stringify(training, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${training.title.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
+app.init();
     </script>
 </body>
 </html>
