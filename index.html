@@ -741,7 +741,7 @@
     <div class="container">
         <div class="header">
             <h1>🎓 UBL L&D Training Manager 🎓</h1>
-            <p>Manage your programs with ease</p>
+            <p>Manage your programs with ease!</p>
         </div>
 
         <div class="main-content">
@@ -778,6 +778,13 @@
                     <div class="form-group">
                         <label>Venue *</label>
                         <input type="text" id="venue" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Training Password *</label>
+                        <input type="password" id="trainingPassword" placeholder="Set a password to edit this training" required>
+                        <small style="color: #6b7280; font-size: 12px; margin-top: 5px; display: block;">
+                            This password will be required to make changes to the checklist. Share it only with authorized personnel.
+                        </small>
                     </div>
                     <button class="btn btn-success" onclick="app.saveTraining()" style="width: 100%;">💾 Save Training</button>
                 </div>
@@ -817,6 +824,21 @@
         </div>
     </div>
 
+    <!-- Password Modal -->
+    <div id="passwordModal" class="loading-overlay" style="display: none;">
+        <div class="loading-content" style="width: 400px; max-width: 90%;">
+            <h3 style="color: #667eea; margin-bottom: 20px; font-size: 24px;">🔒 Enter Training Password</h3>
+            <p style="color: #6b7280; margin-bottom: 20px;">This training is password-protected. Enter the password to make changes.</p>
+            <input type="password" id="passwordInput" placeholder="Enter password" 
+                   style="width: 100%; padding: 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="app.verifyPassword()" style="flex: 1;">✅ Verify</button>
+                <button class="btn btn-secondary" onclick="app.closePasswordModal()" style="flex: 1;">Cancel</button>
+            </div>
+            <p id="passwordError" style="color: #ef4444; margin-top: 15px; font-size: 14px; display: none;"></p>
+        </div>
+    </div>
+
     <script>
 const app = {
     sheetsUrl: 'https://script.google.com/macros/s/AKfycbwxo1jPfAc_F32zXDhOIzni9XZuykzCTQH8UWzNsB6QScDW-iFzqJH8YTaBQiIFvCZY/exec',
@@ -824,6 +846,8 @@ const app = {
     currentTrainingId: null,
     editMode: false,
     pendingChanges: false,
+    isAuthenticated: false,
+    pendingAction: null,
 
     checklistData: {
         preTraining: {
@@ -935,6 +959,7 @@ const app = {
         document.getElementById('dashboardView').classList.remove('hidden');
         document.getElementById('createView').classList.add('hidden');
         document.getElementById('checklistView').classList.add('hidden');
+        this.isAuthenticated = false; // Reset authentication
         this.renderTrainingList();
     },
 
@@ -948,10 +973,16 @@ const app = {
         this.currentTrainingId = null;
     },
 
-    showChecklist(trainingId) {
+    showChecklist(trainingId, skipAuth = false) {
         this.currentTrainingId = trainingId;
         const training = this.trainings.find(t => t.id === trainingId);
         if (!training) return;
+
+        // Check if authenticated for editing
+        if (!skipAuth && !this.isAuthenticated) {
+            // Show in view-only mode initially
+            this.isAuthenticated = false;
+        }
 
         document.getElementById('dashboardView').classList.add('hidden');
         document.getElementById('createView').classList.add('hidden');
@@ -968,9 +999,15 @@ const app = {
         const endDate = document.getElementById('trainingEndDate').value;
         const checker = document.getElementById('checkerName').value.trim();
         const venue = document.getElementById('venue').value.trim();
+        const password = document.getElementById('trainingPassword').value;
 
         if (!title || !startDate || !endDate || !checker || !venue) {
-            alert('Please fill all fields!');
+            alert('Please fill all required fields!');
+            return;
+        }
+
+        if (!this.editMode && !password) {
+            alert('Please set a password for this training!');
             return;
         }
 
@@ -979,6 +1016,17 @@ const app = {
             return;
         }
 
+        // Simple hash function for password (in production, use better encryption)
+        const hashPassword = (pwd) => {
+            let hash = 0;
+            for (let i = 0; i < pwd.length; i++) {
+                const char = pwd.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        };
+
         if (this.editMode && this.currentTrainingId) {
             const training = this.trainings.find(t => t.id === this.currentTrainingId);
             training.title = title;
@@ -986,6 +1034,10 @@ const app = {
             training.endDate = endDate;
             training.checkerName = checker;
             training.venue = venue;
+            // Only update password if a new one is entered
+            if (password) {
+                training.passwordHash = hashPassword(password);
+            }
         } else {
             const newTraining = {
                 id: Date.now(),
@@ -994,6 +1046,7 @@ const app = {
                 endDate: endDate,
                 checkerName: checker,
                 venue: venue,
+                passwordHash: hashPassword(password),
                 createdAt: new Date().toISOString(),
                 checklist: this.initializeChecklist()
             };
@@ -1001,7 +1054,12 @@ const app = {
         }
 
         const success = await this.saveToSheets();
-        if (success) this.showDashboard();
+        if (success) {
+            // Reset password field requirements
+            document.getElementById('trainingPassword').placeholder = 'Set a password to edit this training';
+            document.getElementById('trainingPassword').required = true;
+            this.showDashboard();
+        }
     },
 
     initializeChecklist() {
@@ -1018,6 +1076,13 @@ const app = {
     },
 
     editTrainingInfo() {
+        if (!this.isAuthenticated) {
+            alert('⚠️ Please unlock the training with password first to edit information.');
+            this.requestPasswordForEditing();
+            this.pendingAction = 'editInfo';
+            return;
+        }
+
         const training = this.trainings.find(t => t.id === this.currentTrainingId);
         if (!training) return;
 
@@ -1027,13 +1092,22 @@ const app = {
         document.getElementById('trainingEndDate').value = training.endDate;
         document.getElementById('checkerName').value = training.checkerName;
         document.getElementById('venue').value = training.venue;
+        document.getElementById('trainingPassword').value = ''; // Leave password blank
+        document.getElementById('trainingPassword').placeholder = 'Leave blank to keep current password';
+        document.getElementById('trainingPassword').required = false; // Not required when editing
         document.getElementById('formTitle').textContent = 'Edit Training';
 
         this.showCreateForm();
     },
 
     async deleteTraining() {
-        if (!confirm('Delete this training?')) return;
+        if (!this.isAuthenticated) {
+            alert('⚠️ Please unlock the training with password first to delete it.');
+            this.requestPasswordForEditing();
+            return;
+        }
+        
+        if (!confirm('⚠️ Are you sure you want to delete this training? This action cannot be undone.')) return;
         this.trainings = this.trainings.filter(t => t.id !== this.currentTrainingId);
         const success = await this.saveToSheets();
         if (success) this.showDashboard();
@@ -1047,23 +1121,92 @@ const app = {
         const endDate = new Date(training.endDate);
         endDate.setHours(0, 0, 0, 0);
 
-        if (today < startDate) return 'preTraining';
-        if (today >= startDate && today <= endDate) return 'trainingDay';
-        return 'postTraining';
+        // Add 1 day grace period to start date for pre-training
+        const preTrainingGraceEnd = new Date(startDate);
+        preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
+
+        // Add 1 day grace period to end date for training day
+        const trainingDayGraceEnd = new Date(endDate);
+        trainingDayGraceEnd.setDate(trainingDayGraceEnd.getDate() + 1);
+
+        if (today < startDate) {
+            return 'preTraining';
+        } else if (today >= startDate && today < preTrainingGraceEnd) {
+            // Grace period: both pre-training and training day are active
+            return 'both_preTraining_trainingDay';
+        } else if (today >= preTrainingGraceEnd && today <= endDate) {
+            return 'trainingDay';
+        } else if (today > endDate && today <= trainingDayGraceEnd) {
+            // Grace period: both training day and post-training are active
+            return 'both_trainingDay_postTraining';
+        } else {
+            return 'postTraining';
+        }
     },
 
-    getSectionStatus(sectionKey, activeSection) {
-        if (sectionKey === activeSection) {
-            return { locked: false, label: '🔓 Active Now' };
+    getSectionStatus(sectionKey, activeSection, training) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(training.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        
+        const preTrainingGraceEnd = new Date(startDate);
+        preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
+
+        // Handle grace periods
+        if (activeSection === 'both_preTraining_trainingDay') {
+            if (sectionKey === 'preTraining' || sectionKey === 'trainingDay') {
+                const daysLeft = sectionKey === 'preTraining' 
+                    ? Math.ceil((preTrainingGraceEnd - today) / (1000 * 60 * 60 * 24))
+                    : null;
+                return { 
+                    locked: !this.isAuthenticated, 
+                    label: sectionKey === 'preTraining' 
+                        ? `🔓 Grace Period (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)` 
+                        : '🔓 Active Now',
+                    isGracePeriod: sectionKey === 'preTraining'
+                };
+            }
+            return { locked: true, label: '🔒 Locked' };
         }
+
+        if (activeSection === 'both_trainingDay_postTraining') {
+            const endDate = new Date(training.endDate);
+            endDate.setHours(0, 0, 0, 0);
+            const trainingDayGraceEnd = new Date(endDate);
+            trainingDayGraceEnd.setDate(trainingDayGraceEnd.getDate() + 1);
+            
+            if (sectionKey === 'trainingDay' || sectionKey === 'postTraining') {
+                const daysLeft = sectionKey === 'trainingDay'
+                    ? Math.ceil((trainingDayGraceEnd - today) / (1000 * 60 * 60 * 24))
+                    : null;
+                return { 
+                    locked: !this.isAuthenticated, 
+                    label: sectionKey === 'trainingDay'
+                        ? `🔓 Grace Period (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)`
+                        : '🔓 Active Now',
+                    isGracePeriod: sectionKey === 'trainingDay'
+                };
+            }
+            if (sectionKey === 'preTraining') {
+                return { locked: true, label: '✅ Completed' };
+            }
+            return { locked: true, label: '🔒 Locked' };
+        }
+
+        // Normal section status
+        if (sectionKey === activeSection) {
+            return { locked: !this.isAuthenticated, label: '🔓 Active Now', isGracePeriod: false };
+        }
+        
         const sectionOrder = ['preTraining', 'trainingDay', 'postTraining'];
         const activeSectionIndex = sectionOrder.indexOf(activeSection);
         const currentSectionIndex = sectionOrder.indexOf(sectionKey);
         
         if (currentSectionIndex < activeSectionIndex) {
-            return { locked: true, label: '✅ Completed' };
+            return { locked: true, label: '✅ Completed', isGracePeriod: false };
         }
-        return { locked: true, label: '🔒 Locked' };
+        return { locked: true, label: '🔒 Locked', isGracePeriod: false };
     },
 
     renderTrainingList() {
@@ -1155,8 +1298,21 @@ const app = {
         const activeSection = this.getActiveSection(training);
         let html = '';
 
+        // Add unlock button at the top if not authenticated
+        if (!this.isAuthenticated) {
+            html += `
+                <div class="info-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; margin-bottom: 25px;">
+                    <h4 style="color: #92400e;">🔒 View-Only Mode</h4>
+                    <p style="color: #78350f; margin-bottom: 15px;">You are viewing this training in read-only mode. To make changes, unlock with password.</p>
+                    <button class="btn btn-primary" onclick="app.requestPasswordForEditing()" style="margin-top: 10px;">
+                        🔓 Unlock for Editing
+                    </button>
+                </div>
+            `;
+        }
+
         for (const [section, data] of Object.entries(this.checklistData)) {
-            const status = this.getSectionStatus(section, activeSection);
+            const status = this.getSectionStatus(section, activeSection, training);
             const sectionClass = status.locked ? 'locked' : '';
             
             const sectionItems = training.checklist[section].slice();
@@ -1172,6 +1328,16 @@ const app = {
                     </h2>
             `;
 
+            if (status.isGracePeriod && this.isAuthenticated) {
+                html += `
+                    <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="color: #1e40af; margin: 0; font-size: 14px;">
+                            <strong>⏰ Grace Period Active:</strong> This section can still be edited but will lock soon.
+                        </p>
+                    </div>
+                `;
+            }
+
             sortedItems.forEach((item) => {
                 const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
                 html += `
@@ -1184,6 +1350,7 @@ const app = {
                             <div class="checklist-item-title">${item.id}. ${item.action}</div>
                             <div class="checklist-item-details">
                                 ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
+                                ${item.completedDate ? `<span class="detail-badge">✅ ${item.completedDate}</span>` : ''}
                             </div>
                             <input type="text" 
                                    class="signature-input" 
@@ -1270,12 +1437,64 @@ const app = {
             total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
     },
 
+    requestPasswordForEditing() {
+        document.getElementById('passwordModal').style.display = 'flex';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordError').style.display = 'none';
+        document.getElementById('passwordInput').focus();
+        
+        // Allow Enter key to submit
+        document.getElementById('passwordInput').onkeypress = (e) => {
+            if (e.key === 'Enter') this.verifyPassword();
+        };
+    },
+
+    verifyPassword() {
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training) return;
+
+        const enteredPassword = document.getElementById('passwordInput').value;
+        
+        // Hash the entered password
+        const hashPassword = (pwd) => {
+            let hash = 0;
+            for (let i = 0; i < pwd.length; i++) {
+                const char = pwd.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        };
+
+        const enteredHash = hashPassword(enteredPassword);
+
+        if (enteredHash === training.passwordHash) {
+            this.isAuthenticated = true;
+            this.closePasswordModal();
+            // Re-render checklist with edit permissions
+            this.renderChecklist(training);
+            alert('✅ Authentication successful! You can now edit the checklist.');
+        } else {
+            document.getElementById('passwordError').textContent = '❌ Incorrect password. Please try again.';
+            document.getElementById('passwordError').style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
+        }
+    },
+
+    closePasswordModal() {
+        document.getElementById('passwordModal').style.display = 'none';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordError').style.display = 'none';
+    },
+
     clearForm() {
         document.getElementById('trainingTitle').value = '';
         document.getElementById('trainingStartDate').value = '';
         document.getElementById('trainingEndDate').value = '';
         document.getElementById('checkerName').value = '';
         document.getElementById('venue').value = '';
+        document.getElementById('trainingPassword').value = '';
     },
 
     exportAllData() {
