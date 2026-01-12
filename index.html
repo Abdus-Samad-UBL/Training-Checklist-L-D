@@ -741,7 +741,7 @@
     <div class="container">
         <div class="header">
             <h1>🎓 UBL L&D Training Manager 🎓</h1>
-            <p>Manage your programs with ease!</p>
+            <p>Manage your programs with ease</p>
         </div>
 
         <div class="main-content">
@@ -993,6 +993,32 @@ const app = {
         this.updateStats(training);
     },
 
+    generateTrainingId(title) {
+        // Extract first 3 letters from title (remove spaces and special chars)
+        const letters = title.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase();
+        
+        // If less than 3 letters, pad with 'X'
+        const paddedLetters = letters.padEnd(3, 'X');
+        
+        // Generate 3 random numbers
+        let trainingId;
+        let attempts = 0;
+        const maxAttempts = 1000;
+        
+        do {
+            const numbers = Math.floor(100 + Math.random() * 900); // 100-999
+            trainingId = `${paddedLetters}${numbers}`;
+            attempts++;
+            
+            // Check if this ID already exists
+            const exists = this.trainings.some(t => t.trainingId === trainingId);
+            if (!exists) break;
+            
+        } while (attempts < maxAttempts);
+        
+        return trainingId;
+    },
+
     async saveTraining() {
         const title = document.getElementById('trainingTitle').value.trim();
         const startDate = document.getElementById('trainingStartDate').value;
@@ -1016,7 +1042,7 @@ const app = {
             return;
         }
 
-        // Simple hash function for password (in production, use better encryption)
+        // Simple hash function for password
         const hashPassword = (pwd) => {
             let hash = 0;
             for (let i = 0; i < pwd.length; i++) {
@@ -1025,6 +1051,20 @@ const app = {
                 hash = hash & hash;
             }
             return hash.toString();
+        };
+
+        // Get Pakistan time
+        const getPakistanTime = () => {
+            return new Date().toLocaleString('en-US', { 
+                timeZone: 'Asia/Karachi',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
         };
 
         if (this.editMode && this.currentTrainingId) {
@@ -1039,15 +1079,17 @@ const app = {
                 training.passwordHash = hashPassword(password);
             }
         } else {
+            const trainingId = this.generateTrainingId(title);
             const newTraining = {
                 id: Date.now(),
+                trainingId: trainingId,
                 title: title,
                 startDate: startDate,
                 endDate: endDate,
                 checkerName: checker,
                 venue: venue,
                 passwordHash: hashPassword(password),
-                createdAt: new Date().toISOString(),
+                createdAt: getPakistanTime(),
                 checklist: this.initializeChecklist()
             };
             this.trainings.push(newTraining);
@@ -1114,7 +1156,8 @@ const app = {
     },
 
     getActiveSection(training) {
-        const today = new Date();
+        // Get current date in Pakistan timezone
+        const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
         today.setHours(0, 0, 0, 0);
         const startDate = new Date(training.startDate);
         startDate.setHours(0, 0, 0, 0);
@@ -1145,7 +1188,8 @@ const app = {
     },
 
     getSectionStatus(sectionKey, activeSection, training) {
-        const today = new Date();
+        // Get current date in Pakistan timezone
+        const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
         today.setHours(0, 0, 0, 0);
         const startDate = new Date(training.startDate);
         startDate.setHours(0, 0, 0, 0);
@@ -1230,6 +1274,7 @@ const app = {
             return `
                 <div class="training-card" onclick="app.showChecklist(${training.id})">
                     <h3>${training.title}</h3>
+                    <p style="color: #667eea; font-weight: 700; font-size: 16px; margin-bottom: 10px;">📋 ID: ${training.trainingId || 'N/A'}</p>
                     <p><strong>Start:</strong> ${startDate}</p>
                     <p><strong>End:</strong> ${endDate}</p>
                     <p><strong>Venue:</strong> ${training.venue}</p>
@@ -1250,7 +1295,12 @@ const app = {
         const endDate = new Date(training.endDate).toLocaleDateString();
         
         header.innerHTML = `
-            <h2 style="color: #667eea; margin-bottom: 15px;">${training.title}</h2>
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h2 style="color: #667eea; margin-bottom: 5px;">${training.title}</h2>
+                    <p style="color: #764ba2; font-weight: 700; font-size: 18px;">📋 Training ID: ${training.trainingId || 'N/A'}</p>
+                </div>
+            </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                 <div><strong>Start:</strong> ${startDate}</div>
                 <div><strong>End:</strong> ${endDate}</div>
@@ -1266,7 +1316,7 @@ const app = {
         
         phaseInfo.style.display = 'block';
         
-        const today = new Date();
+        const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
         today.setHours(0, 0, 0, 0);
         const start = new Date(training.startDate);
         start.setHours(0, 0, 0, 0);
@@ -1374,7 +1424,17 @@ const app = {
         training.checklist[section][index].completed = !training.checklist[section][index].completed;
         
         if (training.checklist[section][index].completed) {
-            training.checklist[section][index].completedDate = new Date().toLocaleString();
+            // Use Pakistan time
+            const pakTime = new Date().toLocaleString('en-US', { 
+                timeZone: 'Asia/Karachi',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            training.checklist[section][index].completedDate = pakTime;
         } else {
             training.checklist[section][index].completedDate = '';
         }
