@@ -921,14 +921,29 @@ const app = {
     async loadTrainings() {
         this.showLoading();
         try {
+            console.log('Loading trainings from:', this.sheetsUrl);
             const response = await fetch(this.sheetsUrl);
             if (response.ok) {
                 const text = await response.text();
+                console.log('Raw response:', text);
                 this.trainings = JSON.parse(text);
+                console.log('Parsed trainings:', this.trainings);
+                console.log('Number of trainings loaded:', this.trainings.length);
+                
+                // Log checklist data for each training
+                this.trainings.forEach(t => {
+                    console.log(`Training ${t.trainingId}:`, {
+                        id: t.id,
+                        title: t.title,
+                        preTraining: t.checklist?.preTraining?.length || 0,
+                        trainingDay: t.checklist?.trainingDay?.length || 0,
+                        postTraining: t.checklist?.postTraining?.length || 0
+                    });
+                });
             }
         } catch (error) {
             console.error('Load error:', error);
-            alert('Error loading data. Check console.');
+            alert('Error loading data. Check console (F12) for details.');
         }
         this.hideLoading();
         this.showDashboard();
@@ -937,6 +952,7 @@ const app = {
     async saveToSheets() {
         this.showLoading();
         try {
+            console.log('Saving trainings:', this.trainings);
             const formData = new FormData();
             formData.append('data', JSON.stringify(this.trainings));
             const response = await fetch(this.sheetsUrl, {
@@ -944,12 +960,18 @@ const app = {
                 body: formData
             });
             if (response.ok) {
+                const result = await response.text();
+                console.log('Save response:', result);
                 this.hideLoading();
                 return true;
+            } else {
+                console.error('Save failed with status:', response.status);
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
             }
         } catch (error) {
             console.error('Save error:', error);
-            alert('Error saving data. Check console.');
+            alert('Error saving data. Check console (F12) for details.');
         }
         this.hideLoading();
         return false;
