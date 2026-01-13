@@ -994,11 +994,11 @@ const app = {
     },
 
     generateTrainingId(title) {
-        // Extract first 3 letters from title (remove spaces and special chars)
-        const letters = title.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase();
+        // Extract only letters from title, skipping special characters
+        const lettersOnly = title.replace(/[^a-zA-Z]/g, '');
         
-        // If less than 3 letters, pad with 'X'
-        const paddedLetters = letters.padEnd(3, 'X');
+        // Take first 3 letters (or pad with X if less than 3)
+        const letters = lettersOnly.substring(0, 3).toUpperCase().padEnd(3, 'X');
         
         // Generate 3 random numbers
         let trainingId;
@@ -1007,7 +1007,7 @@ const app = {
         
         do {
             const numbers = Math.floor(100 + Math.random() * 900); // 100-999
-            trainingId = `${paddedLetters}${numbers}`;
+            trainingId = `${letters}${numbers}`;
             attempts++;
             
             // Check if this ID already exists
@@ -1164,6 +1164,21 @@ const app = {
         const endDate = new Date(training.endDate);
         endDate.setHours(0, 0, 0, 0);
 
+        // Calculate training duration in days
+        const durationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+        // If training is longer than 3 days, keep all sections open during training period
+        if (durationDays > 3) {
+            if (today < startDate) {
+                return 'preTraining';
+            } else if (today >= startDate && today <= endDate) {
+                return 'allSections'; // All sections remain open
+            } else {
+                return 'postTraining';
+            }
+        }
+
+        // Original logic for trainings 3 days or less
         // Add 1 day grace period to start date for pre-training
         const preTrainingGraceEnd = new Date(startDate);
         preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
@@ -1196,6 +1211,15 @@ const app = {
         
         const preTrainingGraceEnd = new Date(startDate);
         preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
+
+        // Handle allSections (for trainings longer than 3 days)
+        if (activeSection === 'allSections') {
+            return { 
+                locked: !this.isAuthenticated, 
+                label: '🔓 Active Now',
+                isGracePeriod: false
+            };
+        }
 
         // Handle grace periods
         if (activeSection === 'both_preTraining_trainingDay') {
@@ -1268,7 +1292,10 @@ const app = {
             const sectionNames = {
                 'preTraining': 'Pre-Training',
                 'trainingDay': 'Training Day',
-                'postTraining': 'Post-Training'
+                'postTraining': 'Post-Training',
+                'both_preTraining_trainingDay': 'Pre-Training & Training Day',
+                'both_trainingDay_postTraining': 'Training Day & Post-Training',
+                'allSections': 'All Sections Active'
             };
             
             return `
