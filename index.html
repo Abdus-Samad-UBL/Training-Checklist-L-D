@@ -1724,7 +1724,19 @@ const app = {
             training.attendance = [];
         }
 
+        // Generate training days
+        this.generateTrainingDays(training);
+
+        // Set training info
+        const startDate = new Date(training.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const endDate = new Date(training.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        document.getElementById('attendanceTrainingInfo').textContent = 
+            `${training.title} | ${startDate} to ${endDate} | ${this.trainingDays.length} day${this.trainingDays.length > 1 ? 's' : ''}`;
+
         document.getElementById('attendanceModal').style.display = 'flex';
+        
+        // Render day buttons and table
+        this.renderDayButtons();
         this.renderAttendanceTable();
     },
 
@@ -1833,6 +1845,8 @@ const app = {
                 return;
             }
 
+            console.log('Parsed participants:', participants);
+
             if (participants.length > 0) {
                 // Check for duplicates
                 const newParticipants = participants.filter(p => 
@@ -1840,12 +1854,30 @@ const app = {
                 );
 
                 if (newParticipants.length > 0) {
+                    // Initialize dailyAttendance for each participant for all training days
+                    newParticipants.forEach(participant => {
+                        participant.dailyAttendance = {};
+                        // Initialize all training days as Absent
+                        this.trainingDays.forEach(day => {
+                            participant.dailyAttendance[day] = {
+                                status: 'Absent',
+                                markedAt: null
+                            };
+                        });
+                    });
+
                     training.attendance.push(...newParticipants);
+                    console.log('Total attendance after upload:', training.attendance.length);
+                    
+                    // Re-render the table
                     this.renderAttendanceTable();
+                    
                     alert(`✅ Successfully added ${newParticipants.length} participant(s)!`);
                     fileInput.value = '';
                 } else {
                     alert('ℹ️ No new participants to add. All participants already exist.');
+                    // Still render in case we need to refresh
+                    this.renderAttendanceTable();
                 }
             } else {
                 alert('❌ No valid data found in file. Please check the format.');
@@ -1853,7 +1885,7 @@ const app = {
 
         } catch (error) {
             console.error('File upload error:', error);
-            alert('❌ Error reading file. Please check the format and try again.');
+            alert(`❌ Error reading file: ${error.message}`);
         }
     },
 
@@ -1869,9 +1901,7 @@ const app = {
                 participants.push({
                     employeeNo: columns[0],
                     name: columns[1] || '',
-                    email: columns[2] || '',
-                    status: 'Enrolled',
-                    markedAt: null
+                    email: columns[2] || ''
                 });
             }
         });
@@ -1889,9 +1919,7 @@ const app = {
                 participants.push({
                     employeeNo: String(row[0]),
                     name: String(row[1] || ''),
-                    email: String(row[2] || ''),
-                    status: 'Enrolled',
-                    markedAt: null
+                    email: String(row[2] || '')
                 });
             }
         });
