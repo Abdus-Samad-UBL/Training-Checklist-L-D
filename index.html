@@ -794,6 +794,7 @@
                 <button class="btn btn-secondary" onclick="app.showDashboard()" style="margin-bottom: 20px;">← Back</button>
                 <div class="actions-bar">
                     <button class="btn btn-success hidden" id="confirmBtn" onclick="app.confirmChanges()">✅ Confirm Changes</button>
+                    <button class="btn btn-primary" onclick="app.openAttendanceModal()">👥 Mark Attendance</button>
                     <button class="btn btn-primary" onclick="app.editTrainingInfo()">✏️ Edit Info</button>
                     <button class="btn btn-danger" onclick="app.deleteTraining()">🗑️ Delete</button>
                 </div>
@@ -839,6 +840,114 @@
         </div>
     </div>
 
+<!-- Replace the entire Attendance Modal section with this -->
+<!-- Attendance Modal -->
+<div id="attendanceModal" class="loading-overlay" style="display: none;">
+    <div class="loading-content" style="width: 95%; max-width: 1400px; max-height: 90vh; overflow-y: auto;">
+        <h3 style="color: #667eea; margin-bottom: 10px; font-size: 28px;">👥 Daily Attendance Tracker</h3>
+        <p style="color: #6b7280; margin-bottom: 25px;" id="attendanceTrainingInfo">Mark daily attendance for training participants</p>
+        
+        <!-- Upload Section -->
+        <div id="uploadSection" style="background: #f9fafb; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+            <h4 style="color: #374151; margin-bottom: 15px; font-size: 18px;">📤 Upload Participant List</h4>
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">
+                Upload a CSV or Excel file with columns: <strong>Employee No., Name, Email</strong>
+            </p>
+            <input type="file" id="attendanceFileInput" accept=".csv,.xlsx,.xls" 
+                   style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px;">
+            <button class="btn btn-primary" onclick="app.uploadAttendanceFile()" style="width: 100%;">
+                📥 Upload & Process
+            </button>
+            
+            <div style="margin-top: 15px; padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
+                <p style="color: #78350f; font-size: 13px; margin: 0;">
+                    <strong>💡 Tip:</strong> Upload once, then mark attendance for each training day separately.
+                </p>
+            </div>
+        </div>
+
+        <!-- Day Selector -->
+        <div style="background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%); padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 2px solid #c7d2fe;">
+            <h4 style="color: #4338ca; margin-bottom: 20px; font-size: 20px; font-weight: 700;">📅 Select Training Day</h4>
+            <div id="dayButtonsContainer" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <!-- Day buttons will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Attendance Summary -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; text-align: center;">
+                <h3 style="font-size: 36px; margin-bottom: 8px; font-weight: 700;" id="totalParticipants">0</h3>
+                <p style="font-size: 14px; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px;">Total Participants</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 25px; border-radius: 12px; text-align: center;">
+                <h3 style="font-size: 36px; margin-bottom: 8px; font-weight: 700;" id="presentToday">0</h3>
+                <p style="font-size: 14px; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px;">Present Today</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 25px; border-radius: 12px; text-align: center;">
+                <h3 style="font-size: 36px; margin-bottom: 8px; font-weight: 700;" id="absentToday">0</h3>
+                <p style="font-size: 14px; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px;">Absent Today</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 25px; border-radius: 12px; text-align: center;">
+                <h3 style="font-size: 36px; margin-bottom: 8px; font-weight: 700;" id="attendanceRate">0%</h3>
+                <p style="font-size: 14px; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px;">Attendance Rate</p>
+            </div>
+        </div>
+
+        <!-- Attendance List -->
+        <div id="attendanceListSection">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                <h4 style="color: #374151; font-size: 20px; margin: 0; font-weight: 700;">
+                    Attendance for <span id="currentDayDisplay" style="color: #667eea;">Select a day</span>
+                </h4>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success" onclick="app.markAllPresent()" style="padding: 10px 20px; font-size: 14px;">
+                        ✓ Mark All Present
+                    </button>
+                    <button class="btn btn-danger" onclick="app.markAllAbsent()" style="padding: 10px 20px; font-size: 14px;">
+                        ✗ Mark All Absent
+                    </button>
+                </div>
+            </div>
+            <div id="attendanceTableContainer" style="max-height: 500px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 12px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: #667eea; color: white; position: sticky; top: 0; z-index: 10;">
+                        <tr>
+                            <th style="padding: 14px; text-align: left; border-bottom: 2px solid #e5e7eb; width: 12%;">Employee No.</th>
+                            <th style="padding: 14px; text-align: left; border-bottom: 2px solid #e5e7eb; width: 25%;">Name</th>
+                            <th style="padding: 14px; text-align: left; border-bottom: 2px solid #e5e7eb; width: 28%;">Email</th>
+                            <th style="padding: 14px; text-align: center; border-bottom: 2px solid #e5e7eb; width: 15%;">Status</th>
+                            <th style="padding: 14px; text-align: center; border-bottom: 2px solid #e5e7eb; width: 20%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <tr>
+                            <td colspan="5" style="padding: 60px; text-align: center; color: #9ca3af;">
+                                <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No Data Yet</div>
+                                <div style="font-size: 14px;">Upload participant list and select a training day to mark attendance.</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button class="btn btn-success" onclick="app.saveAttendance()" style="flex: 1; padding: 15px; font-size: 16px;">
+                💾 Save Attendance
+            </button>
+            <button class="btn btn-secondary" onclick="app.closeAttendanceModal()" style="flex: 1; padding: 15px; font-size: 16px;">
+                ← Close
+            </button>
+        </div>
+    </div>
+</div>
+
+
+    <!-- SheetJS Library for Excel support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script>
 const app = {
     sheetsUrl: 'https://script.google.com/macros/s/AKfycbwxo1jPfAc_F32zXDhOIzni9XZuykzCTQH8UWzNsB6QScDW-iFzqJH8YTaBQiIFvCZY/exec',
@@ -848,6 +957,8 @@ const app = {
     pendingChanges: false,
     isAuthenticated: false,
     pendingAction: null,
+    currentAttendanceDay: null,
+    trainingDays: [],
 
     checklistData: {
         preTraining: {
@@ -1112,7 +1223,8 @@ const app = {
                 venue: venue,
                 passwordHash: hashPassword(password),
                 createdAt: getPakistanTime(),
-                checklist: this.initializeChecklist()
+                checklist: this.initializeChecklist(),
+                attendance: [] // Initialize empty attendance array
             };
             this.trainings.push(newTraining);
         }
@@ -1595,6 +1707,383 @@ const app = {
         document.getElementById('passwordModal').style.display = 'none';
         document.getElementById('passwordInput').value = '';
         document.getElementById('passwordError').style.display = 'none';
+    },
+
+    openAttendanceModal() {
+        if (!this.isAuthenticated) {
+            alert('⚠️ Please unlock the training with password first to manage attendance.');
+            this.requestPasswordForEditing();
+            return;
+        }
+
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training) return;
+
+        // Initialize attendance array if it doesn't exist
+        if (!training.attendance) {
+            training.attendance = [];
+        }
+
+        document.getElementById('attendanceModal').style.display = 'flex';
+        this.renderAttendanceTable();
+    },
+
+    closeAttendanceModal() {
+        document.getElementById('attendanceModal').style.display = 'none';
+        this.currentAttendanceDay = null;
+        this.trainingDays = [];
+    },
+
+    generateTrainingDays(training) {
+        const start = new Date(training.startDate);
+        const end = new Date(training.endDate);
+        this.trainingDays = [];
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            this.trainingDays.push(new Date(d).toISOString().split('T')[0]);
+        }
+
+        if (!this.currentAttendanceDay && this.trainingDays.length > 0) {
+            this.currentAttendanceDay = this.trainingDays[0];
+        }
+    },
+
+    renderDayButtons() {
+        const container = document.getElementById('dayButtonsContainer');
+        if (this.trainingDays.length === 0) {
+            container.innerHTML = '<p style="color: #9ca3af;">No training days available</p>';
+            return;
+        }
+
+        container.innerHTML = this.trainingDays.map((day, index) => {
+            const date = new Date(day);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayNum = date.getDate();
+            const month = date.toLocaleDateString('en-US', { month: 'short' });
+            const isSelected = day === this.currentAttendanceDay;
+
+            return `
+                <button onclick="app.selectAttendanceDay('${day}')"
+                        style="padding: 20px 25px; 
+                               border: 3px solid ${isSelected ? '#667eea' : '#d1d5db'};
+                               background: ${isSelected ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white'};
+                               color: ${isSelected ? 'white' : '#374151'};
+                               border-radius: 12px; 
+                               cursor: pointer; 
+                               font-weight: 700;
+                               transition: all 0.3s; 
+                               min-width: 130px;
+                               box-shadow: ${isSelected ? '0 8px 20px rgba(102, 126, 234, 0.3)' : '0 2px 8px rgba(0,0,0,0.1)'};
+                               transform: ${isSelected ? 'translateY(-4px) scale(1.05)' : 'translateY(0)'};
+                               position: relative;">
+                    <div style="font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Day ${index + 1}</div>
+                    <div style="font-size: 11px; opacity: 0.8; margin: 4px 0;">${dayName}</div>
+                    <div style="font-size: 24px; margin: 8px 0; font-weight: 800;">${dayNum}</div>
+                    <div style="font-size: 12px; opacity: 0.9;">${month}</div>
+                    ${isSelected ? '<div style="position: absolute; top: 8px; right: 8px; font-size: 16px;">✓</div>' : ''}
+                </button>
+            `;
+        }).join('');
+    },
+
+    selectAttendanceDay(day) {
+        this.currentAttendanceDay = day;
+        this.renderDayButtons();
+        this.renderAttendanceTable();
+    },
+
+    updateAttendanceStats(total, present, absent) {
+        document.getElementById('totalParticipants').textContent = total;
+        document.getElementById('presentToday').textContent = present;
+        document.getElementById('absentToday').textContent = absent;
+        const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+        document.getElementById('attendanceRate').textContent = rate + '%';
+    },
+
+
+    async uploadAttendanceFile() {
+        const fileInput = document.getElementById('attendanceFileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Please select a file first!');
+            return;
+        }
+
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training) return;
+
+        try {
+            const fileName = file.name.toLowerCase();
+            let participants = [];
+
+            if (fileName.endsWith('.csv')) {
+                // Handle CSV file
+                const text = await file.text();
+                participants = this.parseCSV(text);
+            } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                // Handle Excel file using SheetJS
+                const arrayBuffer = await file.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                participants = this.parseExcelData(jsonData);
+            } else {
+                alert('❌ Unsupported file format. Please upload CSV or Excel file.');
+                return;
+            }
+
+            if (participants.length > 0) {
+                // Check for duplicates
+                const newParticipants = participants.filter(p => 
+                    !training.attendance.some(existing => existing.employeeNo === p.employeeNo)
+                );
+
+                if (newParticipants.length > 0) {
+                    training.attendance.push(...newParticipants);
+                    this.renderAttendanceTable();
+                    alert(`✅ Successfully added ${newParticipants.length} participant(s)!`);
+                    fileInput.value = '';
+                } else {
+                    alert('ℹ️ No new participants to add. All participants already exist.');
+                }
+            } else {
+                alert('❌ No valid data found in file. Please check the format.');
+            }
+
+        } catch (error) {
+            console.error('File upload error:', error);
+            alert('❌ Error reading file. Please check the format and try again.');
+        }
+    },
+
+    parseCSV(text) {
+        const lines = text.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        const participants = [];
+
+        dataLines.forEach(line => {
+            const columns = line.split(',').map(col => col.trim().replace(/['"]/g, ''));
+            
+            if (columns.length >= 3 && columns[0]) {
+                participants.push({
+                    employeeNo: columns[0],
+                    name: columns[1] || '',
+                    email: columns[2] || '',
+                    status: 'Enrolled',
+                    markedAt: null
+                });
+            }
+        });
+
+        return participants;
+    },
+
+    parseExcelData(jsonData) {
+        const participants = [];
+        // Skip header row
+        const dataRows = jsonData.slice(1);
+
+        dataRows.forEach(row => {
+            if (row.length >= 3 && row[0]) {
+                participants.push({
+                    employeeNo: String(row[0]),
+                    name: String(row[1] || ''),
+                    email: String(row[2] || ''),
+                    status: 'Enrolled',
+                    markedAt: null
+                });
+            }
+        });
+
+        return participants;
+    },
+
+    renderAttendanceTable() {
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training || !training.attendance || !this.currentAttendanceDay) {
+            document.getElementById('currentDayDisplay').textContent = 'Select a day';
+            return;
+        }
+
+        const tbody = document.getElementById('attendanceTableBody');
+        const attendance = training.attendance;
+
+        const dayDate = new Date(this.currentAttendanceDay);
+        const displayDate = dayDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+        document.getElementById('currentDayDisplay').textContent = displayDate;
+
+        if (attendance.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="padding: 60px; text-align: center; color: #9ca3af;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No Participants</div>
+                        <div style="font-size: 14px;">Upload a CSV or Excel file to add participants.</div>
+                    </td>
+                </tr>
+            `;
+            this.updateAttendanceStats(0, 0, 0);
+            return;
+        }
+
+        attendance.forEach(participant => {
+            if (!participant.dailyAttendance) {
+                participant.dailyAttendance = {};
+            }
+            if (!participant.dailyAttendance[this.currentAttendanceDay]) {
+                participant.dailyAttendance[this.currentAttendanceDay] = {
+                    status: 'Absent',
+                    markedAt: null
+                };
+            }
+        });
+
+        let presentCount = 0;
+        let absentCount = 0;
+        attendance.forEach(p => {
+            if (p.dailyAttendance[this.currentAttendanceDay]?.status === 'Present') {
+                presentCount++;
+            } else {
+                absentCount++;
+            }
+        });
+
+        this.updateAttendanceStats(attendance.length, presentCount, absentCount);
+
+        tbody.innerHTML = attendance.map((participant, index) => {
+            const dayStatus = participant.dailyAttendance[this.currentAttendanceDay];
+            const isPresent = dayStatus.status === 'Present';
+
+            return `
+                <tr style="border-bottom: 1px solid #e5e7eb; background: ${isPresent ? '#f0fdf4' : 'white'}; transition: all 0.2s;"
+                    onmouseover="this.style.background='#f9fafb'" 
+                    onmouseout="this.style.background='${isPresent ? '#f0fdf4' : 'white'}'">
+                    <td style="padding: 14px; font-weight: 600;">${participant.employeeNo}</td>
+                    <td style="padding: 14px;">${participant.name}</td>
+                    <td style="padding: 14px; font-size: 13px; color: #6b7280;">${participant.email}</td>
+                    <td style="padding: 14px; text-align: center;">
+                        <span style="padding: 8px 16px; 
+                                     border-radius: 20px; 
+                                     font-size: 13px; 
+                                     font-weight: 700;
+                                     background: ${isPresent ? '#dcfce7' : '#fee2e2'};
+                                     color: ${isPresent ? '#166534' : '#991b1b'};
+                                     display: inline-block;
+                                     min-width: 100px;">
+                            ${isPresent ? '✅ Present' : '❌ Absent'}
+                        </span>
+                    </td>
+                    <td style="padding: 14px; text-align: center;">
+                        ${!isPresent ? 
+                            `<button class="btn btn-success" onclick="app.markDayAttendance(${index}, 'Present')" 
+                                    style="padding: 10px 20px; font-size: 13px; font-weight: 600;">
+                                ✓ Mark Present
+                            </button>` :
+                            `<button class="btn btn-danger" onclick="app.markDayAttendance(${index}, 'Absent')" 
+                                    style="padding: 10px 20px; font-size: 13px; font-weight: 600;">
+                                ✗ Mark Absent
+                            </button>`
+                        }
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    markDayAttendance(index, status) {
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training || !training.attendance[index]) return;
+
+        const pakTime = new Date().toLocaleString('en-US', { 
+            timeZone: 'Asia/Karachi',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        if (!training.attendance[index].dailyAttendance) {
+            training.attendance[index].dailyAttendance = {};
+        }
+
+        training.attendance[index].dailyAttendance[this.currentAttendanceDay] = {
+            status: status,
+            markedAt: pakTime
+        };
+        
+        this.renderAttendanceTable();
+    },
+
+    markAllPresent() {
+        if (!confirm('Mark all participants as Present for this day?')) return;
+        
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training || !training.attendance) return;
+
+        const pakTime = new Date().toLocaleString('en-US', { 
+            timeZone: 'Asia/Karachi',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        training.attendance.forEach(participant => {
+            if (!participant.dailyAttendance) {
+                participant.dailyAttendance = {};
+            }
+            participant.dailyAttendance[this.currentAttendanceDay] = {
+                status: 'Present',
+                markedAt: pakTime
+            };
+        });
+
+        this.renderAttendanceTable();
+    },
+
+    markAllAbsent() {
+        if (!confirm('Mark all participants as Absent for this day?')) return;
+        
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        if (!training || !training.attendance) return;
+
+        training.attendance.forEach(participant => {
+            if (!participant.dailyAttendance) {
+                participant.dailyAttendance = {};
+            }
+            participant.dailyAttendance[this.currentAttendanceDay] = {
+                status: 'Absent',
+                markedAt: null
+            };
+        });
+
+        this.renderAttendanceTable();
+    },
+
+    async saveAttendance() {
+        const btn = event.target;
+        btn.textContent = '💾 Saving...';
+        btn.disabled = true;
+
+        const success = await this.saveToSheets();
+        
+        if (success) {
+            alert('✅ Attendance saved successfully!');
+            this.closeAttendanceModal();
+        }
+        
+        btn.textContent = '💾 Save Attendance';
+        btn.disabled = false;
     },
 
     clearForm() {
