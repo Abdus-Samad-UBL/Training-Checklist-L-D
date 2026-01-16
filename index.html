@@ -1026,6 +1026,37 @@ const app = {
                 const text = await response.text();
                 console.log('Raw response:', text);
                 this.trainings = JSON.parse(text);
+                
+                // CRITICAL FIX: Merge loaded data with template to ensure weights exist
+                this.trainings.forEach(training => {
+                    Object.keys(training.checklist).forEach(sectionKey => {
+                        const templateSection = this.checklistData[sectionKey];
+                        if (templateSection) {
+                            training.checklist[sectionKey].forEach(item => {
+                                const templateItem = templateSection.items.find(t => t.id === item.id);
+                                if (templateItem) {
+                                    // Add weight if missing
+                                    if (!item.weight) {
+                                        item.weight = templateItem.weight;
+                                    }
+                                    // Update action text if different (to get latest version)
+                                    if (templateItem.action !== item.action) {
+                                        item.action = templateItem.action;
+                                    }
+                                    // Ensure status field exists (convert old 'completed' to 'status')
+                                    if (item.completed === true && !item.status) {
+                                        item.status = 'yes';
+                                        delete item.completed;
+                                    } else if (item.completed === false && !item.status) {
+                                        item.status = null;
+                                        delete item.completed;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+                
                 console.log('Parsed trainings:', this.trainings);
                 console.log('Number of trainings loaded:', this.trainings.length);
                 
@@ -1683,7 +1714,10 @@ const app = {
             section.forEach(item => {
                 const itemData = sectionData.items.find(i => i.id === item.id);
                 if (itemData) {
+                    // All items count toward total
                     totalWeight += itemData.weight;
+                    
+                    // Yes, No, and N/A all count as completed
                     if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
                         completedWeight += itemData.weight;
                     }
@@ -1706,9 +1740,13 @@ const app = {
             
             section.forEach(item => {
                 totalItems++;
+                
                 const itemData = sectionData.items.find(i => i.id === item.id);
                 if (itemData) {
+                    // All items count toward total weight
                     totalWeight += itemData.weight;
+                    
+                    // Yes, No, and N/A all count as completed
                     if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
                         completedWeight += itemData.weight;
                         completedItems++;
