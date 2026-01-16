@@ -952,53 +952,55 @@ const app = {
     checklistData: {
         preTraining: {
             title: "Pre-Training - Program Readiness & Planning",
+            totalWeight: 55,
             items: [
-                { id: "1.1", action: "Course announcement", timeline: "1 week before training" },
-                { id: "1.2", action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked" },
-                { id: "1.3", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked" },
-                { id: "1.4", action: "Nominations Received", timeline: "Validate audience relevance" },
-                { id: "1.5", action: "Invitation email to Participants", timeline: "1-2 Days before training" },
-                { id: "1.6", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository" },
-                { id: "1.7", action: "Pre & Post Assessment Developed", timeline: "Ensure Quilgo link operational" },
-                { id: "1.8", action: "Reminder email to Trainer", timeline: "1-2 days before training" },
-                { id: "1.9", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before" },
-                { id: "1.10", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk" },
-                { id: "1.11", action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk" },
-                { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand" },
-                { id: "1.13", action: "Multimedia Check", timeline: "Projector, HDMI, Smartscreens" },
-                { id: "1.14", action: "Stationery Arrangement", timeline: "Pads, charts, markers, handouts" },
-                { id: "1.15", action: "Soft Refreshments (If Required)", timeline: "Mints/ Chocolates/ Snacks" },
-                { id: "1.16", action: "Video conferencing + Link (If Applicable)", timeline: "Ensure WebEx working" },
-                { id: "1.17", action: "Lunch/Tea/Refreshments Arrangement", timeline: "1 day before" },
-                { id: "1.18", action: "Photographer Booking (If Required)", timeline: "2 days before" },
-                { id: "1.19", action: "Attendance sheet uploaded", timeline: "To be Uploaded 1 day prior to training" }
+                { id: "1.1", action: "Course announcement", timeline: "1 week before training", weight: 2 },
+                { id: "1.2", action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked", weight: 4 },
+                { id: "1.3", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked", weight: 1.5 },
+                { id: "1.4", action: "Nominations Received", timeline: "Validate audience relevance", weight: 3 },
+                { id: "1.5", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 3 },
+                { id: "1.6", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 5 },
+                { id: "1.7", action: "Pre & Post Assessment Developed", timeline: "Ensure Quilgo link operational", weight: 4 },
+                { id: "1.8", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1.5 },
+                { id: "1.9", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before", weight: 1.5 },
+                { id: "1.10", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
+                { id: "1.11", action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk", weight: 2 },
+                { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand", weight: 4 },
+                { id: "1.13", action: "Multimedia Check", timeline: "Projector, HDMI, Smartscreens", weight: 3 },
+                { id: "1.14", action: "Stationery Arrangement", timeline: "Pads, charts, markers", weight: 2.5 },
+                { id: "1.15", action: "Soft Refreshments (If Required)", timeline: "Mints/ Chocolates/ Snacks", weight: 1 },
+                { id: "1.16", action: "Video conferencing + Link (If Applicable)", timeline: "Ensure working", weight: 3 },
+                { id: "1.17", action: "Lunch/Tea/Refreshments Arrangement", timeline: "1 day before", weight: 2.5 },
+                { id: "1.18", action: "Photographer Booking (If Required)", timeline: "2 days before", weight: 1 },
+                { id: "1.19", action: "Attendance sheet uploaded", timeline: "To be Uploaded 1 day prior to training", weight: 4 }
             ]
         },
         trainingDay: {
             title: "Training Day - Operations & Experience Control",
+            totalWeight: 35,
             items: [
-                { id: "2.1", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance" },
-                { id: "2.2", action: "Handout distribution (If Applicable)", timeline: "Before start of training" },
-                { id: "2.3", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate" },
-                { id: "2.4", action: "Water Dispenser", timeline: "Functional before starting of training" },
-                { id: "2.5", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity with multimedia" },
-                { id: "2.6", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training" },
-                { id: "2.7", action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning" },
-                { id: "2.8", action: "Feedback Form", timeline: "To be conducted day end" },
-                { id: "2.9", action: "Group Photograph taken", timeline: "Mandatory digital copy" },
-                { id: "2.10", action: "Lunch/ Tea timing co-ordinated", timeline: "Confirm with trainer" }
-               
+                { id: "2.1", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance", weight: 6 },
+                { id: "2.2", action: "Handout distribution (If Applicable)", timeline: "Before start of training", weight: 3 },
+                { id: "2.3", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate", weight: 5 },
+                { id: "2.4", action: "Water Dispenser", timeline: "Functional before starting of training", weight: 2 },
+                { id: "2.5", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity", weight: 3.5 },
+                { id: "2.6", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training", weight: 3.5 },
+                { id: "2.7", action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning", weight: 3 },
+                { id: "2.8", action: "Feedback Form", timeline: "To be conducted day end", weight: 4 },
+                { id: "2.9", action: "Group Photograph taken", timeline: "Mandatory digital copy", weight: 2 },
+                { id: "2.10", action: "Lunch/Tea timing coordinated", timeline: "Confirm with trainer", weight: 3 }
             ]
         },
         postTraining: {
             title: "Post Training - Learning Effectiveness & Closure",
+            totalWeight: 10,
             items: [
-                { id: "3.1", action: "Feedback Form Circulation", timeline: "1 day after training concluded" },
-                { id: "3.2", action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded" },
-                { id: "3.3", action: "Pre/Post Assessment Results shared with Stakeholders", timeline: "2-3 days after" },
-                { id: "3.4", action: "Compilation of Feedback", timeline: "2-3 days after" },
-                { id: "3.5", action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week" },
-                { id: "3.6", action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after" }
+                { id: "3.1", action: "Feedback Form Circulation", timeline: "1 day after training concluded", weight: 3 },
+                { id: "3.2", action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded", weight: 1 },
+                { id: "3.3", action: "Pre/Post Assessment Results shared with Stakeholders", timeline: "2-3 days after", weight: 2 },
+                { id: "3.4", action: "Compilation of Feedback", timeline: "2-3 days after", weight: 2 },
+                { id: "3.5", action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week", weight: 1 },
+                { id: "3.6", action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after", weight: 1 }
             ]
         }
     },
@@ -1273,6 +1275,19 @@ const app = {
 
         const durationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
+        // One-day training (start and end on same day)
+        if (durationDays === 1) {
+            if (today < startDate) {
+                return 'preTraining';
+            } else if (today.getTime() === startDate.getTime()) {
+                // On training day - all sections open
+                return 'allSections';
+            } else {
+                return 'postTraining';
+            }
+        }
+
+        // Training longer than 3 days - keep all sections open during training period
         if (durationDays > 3) {
             if (today < startDate) {
                 return 'preTraining';
@@ -1283,6 +1298,7 @@ const app = {
             }
         }
 
+        // 2-3 day trainings - use grace period logic
         const preTrainingGraceEnd = new Date(startDate);
         preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
 
@@ -1513,6 +1529,8 @@ const app = {
 
             sortedItems.forEach((item) => {
                 const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
+                const itemData = data.items.find(i => i.id === item.id);
+                const weight = itemData ? itemData.weight : 0;
                 const hasOptional = item.action.includes('(If Required)') || item.action.includes('(If Applicable)');
                 const itemClass = item.status === 'yes' ? 'completed' : 
                                 item.status === 'no' ? 'status-no' : 
@@ -1523,6 +1541,7 @@ const app = {
                         <div class="checklist-item-content" style="flex: 1;">
                             <div class="checklist-item-title">${item.id}. ${item.action}</div>
                             <div class="checklist-item-details">
+                                <span class="detail-badge">📊 ${weight}%</span>
                                 ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
                                 ${item.completedDate ? `<span class="detail-badge">✅ ${item.completedDate}</span>` : ''}
                             </div>
@@ -1654,26 +1673,54 @@ const app = {
     },
 
     calculateProgress(training) {
-        let total = 0;
-        let completed = 0;
-        for (const section of Object.values(training.checklist)) {
-            total += section.length;
-            completed += section.filter(item => item.status === 'yes' || item.status === 'no' || item.status === 'na').length;
+        let totalWeight = 0;
+        let completedWeight = 0;
+        
+        for (const [sectionKey, section] of Object.entries(training.checklist)) {
+            const sectionData = this.checklistData[sectionKey];
+            if (!sectionData) continue;
+            
+            section.forEach(item => {
+                const itemData = sectionData.items.find(i => i.id === item.id);
+                if (itemData) {
+                    totalWeight += itemData.weight;
+                    if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
+                        completedWeight += itemData.weight;
+                    }
+                }
+            });
         }
-        return total > 0 ? Math.round((completed / total) * 100) : 0;
+        
+        return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
     },
 
     updateStats(training) {
-        let total = 0;
-        let completed = 0;
-        for (const section of Object.values(training.checklist)) {
-            total += section.length;
-            completed += section.filter(item => item.status === 'yes' || item.status === 'no' || item.status === 'na').length;
+        let totalWeight = 0;
+        let completedWeight = 0;
+        let totalItems = 0;
+        let completedItems = 0;
+        
+        for (const [sectionKey, section] of Object.entries(training.checklist)) {
+            const sectionData = this.checklistData[sectionKey];
+            if (!sectionData) continue;
+            
+            section.forEach(item => {
+                totalItems++;
+                const itemData = sectionData.items.find(i => i.id === item.id);
+                if (itemData) {
+                    totalWeight += itemData.weight;
+                    if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
+                        completedWeight += itemData.weight;
+                        completedItems++;
+                    }
+                }
+            });
         }
-        document.getElementById('totalItems').textContent = total;
-        document.getElementById('completedItems').textContent = completed;
+        
+        document.getElementById('totalItems').textContent = totalItems;
+        document.getElementById('completedItems').textContent = completedItems;
         document.getElementById('progressPercentage').textContent = 
-            total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
+            totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) + '%' : '0%';
     },
 
     requestPasswordForEditing() {
