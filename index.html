@@ -180,6 +180,120 @@
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
         }
         
+        /* Status Button Styles */
+        .btn-status {
+            padding: 8px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #374151;
+        }
+        
+        .btn-status:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-status:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-status-yes {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        .btn-status-yes:hover:not(:disabled) {
+            background: #f0fdf4;
+            border-color: #059669;
+        }
+        
+        .btn-status-yes-active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-status-no {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        
+        .btn-status-no:hover:not(:disabled) {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+        
+        .btn-status-no-active {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border-color: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-status-na {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        
+        .btn-status-na:hover:not(:disabled) {
+            background: #fffbeb;
+            border-color: #d97706;
+        }
+        
+        .btn-status-na-active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border-color: #f59e0b;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        /* Status-based item styling */
+        .checklist-item.status-no {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #ef4444;
+        }
+        
+        .checklist-item.status-na {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #f59e0b;
+        }
+        
+        /* Notes input */
+        .notes-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .notes-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .status-no .notes-input {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .status-no .notes-input:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
         .form-section {
             background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
             padding: 30px;
@@ -478,20 +592,6 @@
             }
         }
         
-        .checklist-item input[type="checkbox"] {
-            width: 26px;
-            height: 26px;
-            cursor: pointer;
-            flex-shrink: 0;
-            margin-top: 2px;
-            transition: all 0.3s ease;
-            accent-color: #667eea;
-        }
-        
-        .checklist-item input[type="checkbox"]:hover {
-            transform: scale(1.1);
-        }
-        
         .checklist-item-content { flex: 1; }
         
         .checklist-item-title {
@@ -539,7 +639,7 @@
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             width: 100%;
-            max-width: 320px;
+            max-width: 100%;
             font-size: 14px;
             transition: all 0.3s ease;
         }
@@ -853,55 +953,52 @@ const app = {
         preTraining: {
             title: "Pre-Training - Program Readiness & Planning",
             items: [
-                { id: 1.1, action: "Course announcement", timeline: "1 week before training" },
-                { id: 1.2, action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked" },
-                { id: 1.3, action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked" },
-                { id: 1.4, action: "Final Nomination List Approved", timeline: "Validate audience relevance" },
-                { id: 1.5, action: "Confirmation email to Participants", timeline: "1-2 Days before training" },
-                { id: 1.6, action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository" },
-                { id: 1.7, action: "Pre & Post Assessment Developed", timeline: "Ensure Quilgo link operational" },
-                { id: 1.8, action: "Reminder email to Trainer", timeline: "1-2 days before training" },
-                { id: 1.9, action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before" },
-                { id: 1.10, action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk" },
-                { id: 1.11, action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk" },
-                { id: 1.12, action: "Classroom Reservation", timeline: "Room to be reserved beforehand" },
-                { id: 1.13, action: "Multimedia Check", timeline: "Projector, HDMI, Smartscreens" },
-                { id: 1.14, action: "Stationery Arrangement", timeline: "Pads, charts, markers" },
-                { id: 1.15, action: "Handouts Arrangement", timeline: "As per requirement" },
-                { id: 1.16, action: "Seating arrangements", timeline: "As per facility" },
-                { id: 1.17, action: "Soft Refreshments (If Required)", timeline: "Mints/ Chocolates/ Snacks" },
-                { id: 1.18, action: "Video conferencing + Link (If Applicable)", timeline: "Ensure working" },
-                { id: 1.19, action: "Lunch/Tea/Refreshments Arrangement", timeline: "1 day before" },
-                { id: 1.20, action: "Photographer Booking (If Required)", timeline: "2 days before" },
-                { id: 1.21, action: "Attendance sheet uploaded", timeline: "To be Uploaded 1 day prior to training" }
+                { id: "1.1", action: "Course announcement", timeline: "1 week before training" },
+                { id: "1.2", action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked" },
+                { id: "1.3", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked" },
+                { id: "1.4", action: "Nominations Received", timeline: "Validate audience relevance" },
+                { id: "1.5", action: "Invitation email to Participants", timeline: "1-2 Days before training" },
+                { id: "1.6", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository" },
+                { id: "1.7", action: "Pre & Post Assessment Developed", timeline: "Ensure Quilgo link operational" },
+                { id: "1.8", action: "Reminder email to Trainer", timeline: "1-2 days before training" },
+                { id: "1.9", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before" },
+                { id: "1.10", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk" },
+                { id: "1.11", action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk" },
+                { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand" },
+                { id: "1.13", action: "Multimedia Check", timeline: "Projector, HDMI, Smartscreens" },
+                { id: "1.14", action: "Stationery Arrangement", timeline: "Pads, charts, markers, handouts" },
+                { id: "1.15", action: "Soft Refreshments (If Required)", timeline: "Mints/ Chocolates/ Snacks" },
+                { id: "1.16", action: "Video conferencing + Link (If Applicable)", timeline: "Ensure WebEx working" },
+                { id: "1.17", action: "Lunch/Tea/Refreshments Arrangement", timeline: "1 day before" },
+                { id: "1.18", action: "Photographer Booking (If Required)", timeline: "2 days before" },
+                { id: "1.19", action: "Attendance sheet uploaded", timeline: "To be Uploaded 1 day prior to training" }
             ]
         },
         trainingDay: {
             title: "Training Day - Operations & Experience Control",
             items: [
-                { id: 2.1, action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance" },
-                { id: 2.2, action: "Handout distribution (If Applicable)", timeline: "Before start of training" },
-                { id: 2.3, action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate" },
-                { id: 2.4, action: "Water Dispenser", timeline: "Functional before starting of training" },
-                { id: 2.5, action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity" },
-                { id: 2.6, action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training" },
-                { id: 2.7, action: "Handout Distribution (If Applicable)", timeline: "Distributed before start of training" },
-                { id: 2.8, action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning" },
-                { id: 2.9, action: "Feedback Form", timeline: "To be conducted day end" },
-                { id: 2.10, action: "Group Photograph taken", timeline: "Mandatory digital copy" },
-                { id: 2.11, action: "Lunch/ Tea timing co-ordinated", timeline: "Confirm with trainer" }
+                { id: "2.1", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance" },
+                { id: "2.2", action: "Handout distribution (If Applicable)", timeline: "Before start of training" },
+                { id: "2.3", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate" },
+                { id: "2.4", action: "Water Dispenser", timeline: "Functional before starting of training" },
+                { id: "2.5", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity with multimedia" },
+                { id: "2.6", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training" },
+                { id: "2.7", action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning" },
+                { id: "2.8", action: "Feedback Form", timeline: "To be conducted day end" },
+                { id: "2.9", action: "Group Photograph taken", timeline: "Mandatory digital copy" },
+                { id: "2.10", action: "Lunch/ Tea timing co-ordinated", timeline: "Confirm with trainer" }
                
             ]
         },
         postTraining: {
             title: "Post Training - Learning Effectiveness & Closure",
             items: [
-                { id: 3.1, action: "Feedback Form Circulation", timeline: "1 day after training concluded" },
-                { id: 3.2, action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded" },
-                { id: 3.3, action: "Pre/Post Assessment Results", timeline: "2-3 days after" },
-                { id: 3.4, action: "Compilation of Feedback", timeline: "2-3 days after" },
-                { id: 3.5, action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week" },
-                { id: 3.6, action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after" }
+                { id: "3.1", action: "Feedback Form Circulation", timeline: "1 day after training concluded" },
+                { id: "3.2", action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded" },
+                { id: "3.3", action: "Pre/Post Assessment Results shared with Stakeholders", timeline: "2-3 days after" },
+                { id: "3.4", action: "Compilation of Feedback", timeline: "2-3 days after" },
+                { id: "3.5", action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week" },
+                { id: "3.6", action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after" }
             ]
         }
     },
@@ -930,7 +1027,6 @@ const app = {
                 console.log('Parsed trainings:', this.trainings);
                 console.log('Number of trainings loaded:', this.trainings.length);
                 
-                // Log checklist data for each training
                 this.trainings.forEach(t => {
                     console.log(`Training ${t.trainingId}:`, {
                         id: t.id,
@@ -981,7 +1077,7 @@ const app = {
         document.getElementById('dashboardView').classList.remove('hidden');
         document.getElementById('createView').classList.add('hidden');
         document.getElementById('checklistView').classList.add('hidden');
-        this.isAuthenticated = false; // Reset authentication
+        this.isAuthenticated = false;
         this.renderTrainingList();
     },
 
@@ -1000,9 +1096,7 @@ const app = {
         const training = this.trainings.find(t => t.id === trainingId);
         if (!training) return;
 
-        // Check if authenticated for editing
         if (!skipAuth && !this.isAuthenticated) {
-            // Show in view-only mode initially
             this.isAuthenticated = false;
         }
 
@@ -1016,23 +1110,18 @@ const app = {
     },
 
     generateTrainingId(title) {
-        // Extract only letters from title, skipping special characters
         const lettersOnly = title.replace(/[^a-zA-Z]/g, '');
-        
-        // Take first 3 letters (or pad with X if less than 3)
         const letters = lettersOnly.substring(0, 3).toUpperCase().padEnd(3, 'X');
         
-        // Generate 3 random numbers
         let trainingId;
         let attempts = 0;
         const maxAttempts = 1000;
         
         do {
-            const numbers = Math.floor(100 + Math.random() * 900); // 100-999
+            const numbers = Math.floor(100 + Math.random() * 900);
             trainingId = `${letters}${numbers}`;
             attempts++;
             
-            // Check if this ID already exists
             const exists = this.trainings.some(t => t.trainingId === trainingId);
             if (!exists) break;
             
@@ -1064,7 +1153,6 @@ const app = {
             return;
         }
 
-        // Simple hash function for password
         const hashPassword = (pwd) => {
             let hash = 0;
             for (let i = 0; i < pwd.length; i++) {
@@ -1075,7 +1163,6 @@ const app = {
             return hash.toString();
         };
 
-        // Get Pakistan time
         const getPakistanTime = () => {
             return new Date().toLocaleString('en-US', { 
                 timeZone: 'Asia/Karachi',
@@ -1096,7 +1183,6 @@ const app = {
             training.endDate = endDate;
             training.checkerName = checker;
             training.venue = venue;
-            // Only update password if a new one is entered
             if (password) {
                 training.passwordHash = hashPassword(password);
             }
@@ -1119,7 +1205,6 @@ const app = {
 
         const success = await this.saveToSheets();
         if (success) {
-            // Reset password field requirements
             document.getElementById('trainingPassword').placeholder = 'Set a password to edit this training';
             document.getElementById('trainingPassword').required = true;
             this.showDashboard();
@@ -1131,7 +1216,8 @@ const app = {
         for (const [section, data] of Object.entries(this.checklistData)) {
             checklist[section] = data.items.map(item => ({
                 ...item,
-                completed: false,
+                status: null,
+                notes: '',
                 signature: '',
                 completedDate: ''
             }));
@@ -1156,9 +1242,9 @@ const app = {
         document.getElementById('trainingEndDate').value = training.endDate;
         document.getElementById('checkerName').value = training.checkerName;
         document.getElementById('venue').value = training.venue;
-        document.getElementById('trainingPassword').value = ''; // Leave password blank
+        document.getElementById('trainingPassword').value = '';
         document.getElementById('trainingPassword').placeholder = 'Leave blank to keep current password';
-        document.getElementById('trainingPassword').required = false; // Not required when editing
+        document.getElementById('trainingPassword').required = false;
         document.getElementById('formTitle').textContent = 'Edit Training';
 
         this.showCreateForm();
@@ -1178,7 +1264,6 @@ const app = {
     },
 
     getActiveSection(training) {
-        // Get current date in Pakistan timezone
         const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
         today.setHours(0, 0, 0, 0);
         const startDate = new Date(training.startDate);
@@ -1186,38 +1271,31 @@ const app = {
         const endDate = new Date(training.endDate);
         endDate.setHours(0, 0, 0, 0);
 
-        // Calculate training duration in days
         const durationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
-        // If training is longer than 3 days, keep all sections open during training period
         if (durationDays > 3) {
             if (today < startDate) {
                 return 'preTraining';
             } else if (today >= startDate && today <= endDate) {
-                return 'allSections'; // All sections remain open
+                return 'allSections';
             } else {
                 return 'postTraining';
             }
         }
 
-        // Original logic for trainings 3 days or less
-        // Add 1 day grace period to start date for pre-training
         const preTrainingGraceEnd = new Date(startDate);
         preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
 
-        // Add 1 day grace period to end date for training day
         const trainingDayGraceEnd = new Date(endDate);
         trainingDayGraceEnd.setDate(trainingDayGraceEnd.getDate() + 1);
 
         if (today < startDate) {
             return 'preTraining';
         } else if (today >= startDate && today < preTrainingGraceEnd) {
-            // Grace period: both pre-training and training day are active
             return 'both_preTraining_trainingDay';
         } else if (today >= preTrainingGraceEnd && today <= endDate) {
             return 'trainingDay';
         } else if (today > endDate && today <= trainingDayGraceEnd) {
-            // Grace period: both training day and post-training are active
             return 'both_trainingDay_postTraining';
         } else {
             return 'postTraining';
@@ -1225,7 +1303,6 @@ const app = {
     },
 
     getSectionStatus(sectionKey, activeSection, training) {
-        // Get current date in Pakistan timezone
         const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
         today.setHours(0, 0, 0, 0);
         const startDate = new Date(training.startDate);
@@ -1234,7 +1311,6 @@ const app = {
         const preTrainingGraceEnd = new Date(startDate);
         preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
 
-        // Handle allSections (for trainings longer than 3 days)
         if (activeSection === 'allSections') {
             return { 
                 locked: !this.isAuthenticated, 
@@ -1243,7 +1319,6 @@ const app = {
             };
         }
 
-        // Handle grace periods
         if (activeSection === 'both_preTraining_trainingDay') {
             if (sectionKey === 'preTraining' || sectionKey === 'trainingDay') {
                 const daysLeft = sectionKey === 'preTraining' 
@@ -1284,7 +1359,6 @@ const app = {
             return { locked: true, label: '🔒 Locked' };
         }
 
-        // Normal section status
         if (sectionKey === activeSection) {
             return { locked: !this.isAuthenticated, label: '🔓 Active Now', isGracePeriod: false };
         }
@@ -1397,7 +1471,6 @@ const app = {
         const activeSection = this.getActiveSection(training);
         let html = '';
 
-        // Add unlock button at the top if not authenticated
         if (!this.isAuthenticated) {
             html += `
                 <div class="info-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; margin-bottom: 25px;">
@@ -1415,9 +1488,10 @@ const app = {
             const sectionClass = status.locked ? 'locked' : '';
             
             const sectionItems = training.checklist[section].slice();
-            const incompleteItems = sectionItems.filter(item => !item.completed);
-            const completedItems = sectionItems.filter(item => item.completed);
-            const sortedItems = [...incompleteItems, ...completedItems];
+            const sortedItems = sectionItems.sort((a, b) => {
+                const order = {null: 0, 'no': 1, 'yes': 2, 'na': 2};
+                return (order[a.status] || 0) - (order[b.status] || 0);
+            });
             
             html += `
                 <div class="checklist-section ${sectionClass}">
@@ -1439,21 +1513,57 @@ const app = {
 
             sortedItems.forEach((item) => {
                 const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
+                const hasOptional = item.action.includes('(If Required)') || item.action.includes('(If Applicable)');
+                const itemClass = item.status === 'yes' ? 'completed' : 
+                                item.status === 'no' ? 'status-no' : 
+                                item.status === 'na' ? 'status-na' : '';
+                
                 html += `
-                    <div class="checklist-item ${item.completed ? 'completed' : ''}">
-                        <input type="checkbox" 
-                               ${item.completed ? 'checked' : ''} 
-                               ${status.locked ? 'disabled' : ''}
-                               onchange="app.toggleChecklistItem('${section}', ${originalIndex})">
-                        <div class="checklist-item-content">
+                    <div class="checklist-item ${itemClass}">
+                        <div class="checklist-item-content" style="flex: 1;">
                             <div class="checklist-item-title">${item.id}. ${item.action}</div>
                             <div class="checklist-item-details">
                                 ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
                                 ${item.completedDate ? `<span class="detail-badge">✅ ${item.completedDate}</span>` : ''}
                             </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                                <button class="btn-status ${item.status === 'yes' ? 'btn-status-yes-active' : 'btn-status-yes'}" 
+                                        onclick="app.setItemStatus('${section}', ${originalIndex}, 'yes')"
+                                        ${status.locked ? 'disabled' : ''}>
+                                    ${item.status === 'yes' ? '✅ Yes' : 'Yes'}
+                                </button>
+                                <button class="btn-status ${item.status === 'no' ? 'btn-status-no-active' : 'btn-status-no'}" 
+                                        onclick="app.setItemStatus('${section}', ${originalIndex}, 'no')"
+                                        ${status.locked ? 'disabled' : ''}>
+                                    ${item.status === 'no' ? '❌ No' : 'No'}
+                                </button>
+                                ${hasOptional ? `
+                                    <button class="btn-status ${item.status === 'na' ? 'btn-status-na-active' : 'btn-status-na'}" 
+                                            onclick="app.setItemStatus('${section}', ${originalIndex}, 'na')"
+                                            ${status.locked ? 'disabled' : ''}>
+                                        ${item.status === 'na' ? '⊘ N/A' : 'N/A'}
+                                    </button>
+                                ` : ''}
+                            </div>
+                            
+                            ${item.status === 'no' || item.notes ? `
+                                <div style="margin-top: 12px;">
+                                    <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 5px; font-weight: 600;">
+                                        ${item.status === 'no' ? 'Reason for No (Required):' : 'Notes:'}
+                                    </label>
+                                    <textarea 
+                                        class="notes-input" 
+                                        placeholder="${item.status === 'no' ? 'Please explain why this item is marked as No...' : 'Additional notes...'}"
+                                        ${status.locked ? 'disabled' : ''}
+                                        onchange="app.updateItemNotes('${section}', ${originalIndex}, this.value)"
+                                        rows="2">${item.notes || ''}</textarea>
+                                </div>
+                            ` : ''}
+                            
                             <input type="text" 
                                    class="signature-input" 
-                                   placeholder="Details/ Notes..." 
+                                   placeholder="Details/ Signature..." 
                                    value="${item.signature || ''}"
                                    ${status.locked ? 'disabled' : ''}
                                    onchange="app.updateSignature('${section}', ${originalIndex}, this.value)">
@@ -1468,12 +1578,26 @@ const app = {
         container.innerHTML = html;
     },
 
-    toggleChecklistItem(section, index) {
+    setItemStatus(section, index, status) {
         const training = this.trainings.find(t => t.id === this.currentTrainingId);
-        training.checklist[section][index].completed = !training.checklist[section][index].completed;
+        const item = training.checklist[section][index];
         
-        if (training.checklist[section][index].completed) {
-            // Use Pakistan time
+        if (status === 'no' && !item.notes) {
+            item.status = status;
+            this.markPendingChanges();
+            this.renderChecklist(training);
+            this.updateStats(training);
+            
+            setTimeout(() => {
+                const textarea = document.querySelectorAll('.notes-input')[0];
+                if (textarea) textarea.focus();
+            }, 100);
+            return;
+        }
+        
+        item.status = status;
+        
+        if (status === 'yes' || status === 'na') {
             const pakTime = new Date().toLocaleString('en-US', { 
                 timeZone: 'Asia/Karachi',
                 year: 'numeric',
@@ -1483,14 +1607,20 @@ const app = {
                 minute: '2-digit',
                 hour12: true
             });
-            training.checklist[section][index].completedDate = pakTime;
+            item.completedDate = pakTime;
         } else {
-            training.checklist[section][index].completedDate = '';
+            item.completedDate = '';
         }
         
         this.markPendingChanges();
         this.renderChecklist(training);
         this.updateStats(training);
+    },
+
+    updateItemNotes(section, index, notes) {
+        const training = this.trainings.find(t => t.id === this.currentTrainingId);
+        training.checklist[section][index].notes = notes;
+        this.markPendingChanges();
     },
 
     updateSignature(section, index, value) {
@@ -1528,7 +1658,7 @@ const app = {
         let completed = 0;
         for (const section of Object.values(training.checklist)) {
             total += section.length;
-            completed += section.filter(item => item.completed).length;
+            completed += section.filter(item => item.status === 'yes' || item.status === 'no' || item.status === 'na').length;
         }
         return total > 0 ? Math.round((completed / total) * 100) : 0;
     },
@@ -1538,7 +1668,7 @@ const app = {
         let completed = 0;
         for (const section of Object.values(training.checklist)) {
             total += section.length;
-            completed += section.filter(item => item.completed).length;
+            completed += section.filter(item => item.status === 'yes' || item.status === 'no' || item.status === 'na').length;
         }
         document.getElementById('totalItems').textContent = total;
         document.getElementById('completedItems').textContent = completed;
@@ -1552,7 +1682,6 @@ const app = {
         document.getElementById('passwordError').style.display = 'none';
         document.getElementById('passwordInput').focus();
         
-        // Allow Enter key to submit
         document.getElementById('passwordInput').onkeypress = (e) => {
             if (e.key === 'Enter') this.verifyPassword();
         };
@@ -1564,7 +1693,6 @@ const app = {
 
         const enteredPassword = document.getElementById('passwordInput').value;
         
-        // Hash the entered password
         const hashPassword = (pwd) => {
             let hash = 0;
             for (let i = 0; i < pwd.length; i++) {
@@ -1580,7 +1708,6 @@ const app = {
         if (enteredHash === training.passwordHash) {
             this.isAuthenticated = true;
             this.closePasswordModal();
-            // Re-render checklist with edit permissions
             this.renderChecklist(training);
             alert('✅ Authentication successful! You can now edit the checklist.');
         } else {
