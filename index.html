@@ -949,7 +949,8 @@ const app = {
     isAuthenticated: false,
     pendingAction: null,
 
-    checklistData: {
+    // TEMPLATE with weights - this is the source of truth
+    checklistTemplate: {
         preTraining: {
             title: "Pre-Training - Program Readiness & Planning",
             totalWeight: 55,
@@ -1005,6 +1006,11 @@ const app = {
         }
     },
 
+    // Getter that returns template for rendering
+    get checklistData() {
+        return this.checklistTemplate;
+    },
+
     init() {
         document.addEventListener('DOMContentLoaded', () => this.loadTrainings());
     },
@@ -1020,59 +1026,46 @@ const app = {
     async loadTrainings() {
         this.showLoading();
         try {
-            console.log('Loading trainings from:', this.sheetsUrl);
             const response = await fetch(this.sheetsUrl);
             if (response.ok) {
                 const text = await response.text();
-                console.log('Raw response:', text);
                 this.trainings = JSON.parse(text);
                 
-                // CRITICAL FIX: Merge loaded data with template to ensure weights exist
+                console.log('=== LOADED FROM SHEETS ===');
+                
+                // CRITICAL FIX: Ensure every item has weight from template
                 this.trainings.forEach(training => {
                     Object.keys(training.checklist).forEach(sectionKey => {
-                        const templateSection = this.checklistData[sectionKey];
+                        const templateSection = this.checklistTemplate[sectionKey];
                         if (templateSection) {
-                            training.checklist[sectionKey].forEach(item => {
+                            training.checklist[sectionKey] = training.checklist[sectionKey].map(item => {
                                 const templateItem = templateSection.items.find(t => t.id === item.id);
-                                if (templateItem) {
-                                    // Add weight if missing
-                                    if (!item.weight) {
-                                        item.weight = templateItem.weight;
-                                    }
-                                    // Update action text if different (to get latest version)
-                                    if (templateItem.action !== item.action) {
-                                        item.action = templateItem.action;
-                                    }
-                                    // Ensure status field exists (convert old 'completed' to 'status')
-                                    if (item.completed === true && !item.status) {
-                                        item.status = 'yes';
-                                        delete item.completed;
-                                    } else if (item.completed === false && !item.status) {
-                                        item.status = null;
-                                        delete item.completed;
-                                    }
-                                }
+                                
+                                // FORCE weight from template (don't trust loaded value)
+                                const weight = templateItem ? templateItem.weight : 0;
+                                
+                                console.log(`Item ${item.id}: loaded weight=${item.weight}, template weight=${weight}, using=${weight}`);
+                                
+                                return {
+                                    ...item,
+                                    weight: weight,  // ALWAYS use template weight
+                                    action: templateItem ? templateItem.action : item.action,
+                                    timeline: templateItem ? templateItem.timeline : item.timeline
+                                };
                             });
                         }
                     });
                 });
                 
-                console.log('Parsed trainings:', this.trainings);
-                console.log('Number of trainings loaded:', this.trainings.length);
-                
+                console.log('=== AFTER WEIGHT FIX ===');
                 this.trainings.forEach(t => {
-                    console.log(`Training ${t.trainingId}:`, {
-                        id: t.id,
-                        title: t.title,
-                        preTraining: t.checklist?.preTraining?.length || 0,
-                        trainingDay: t.checklist?.trainingDay?.length || 0,
-                        postTraining: t.checklist?.postTraining?.length || 0
-                    });
+                    const progress = this.calculateProgress(t);
+                    console.log(`Training ${t.trainingId}: Progress = ${progress}%`);
                 });
             }
         } catch (error) {
             console.error('Load error:', error);
-            alert('Error loading data. Check console (F12) for details.');
+            alert('Error loading data.');
         }
         this.hideLoading();
         this.showDashboard();
@@ -1081,7 +1074,6 @@ const app = {
     async saveToSheets() {
         this.showLoading();
         try {
-            console.log('Saving trainings:', this.trainings);
             const formData = new FormData();
             formData.append('data', JSON.stringify(this.trainings));
             const response = await fetch(this.sheetsUrl, {
@@ -1089,18 +1081,12 @@ const app = {
                 body: formData
             });
             if (response.ok) {
-                const result = await response.text();
-                console.log('Save response:', result);
                 this.hideLoading();
                 return true;
-            } else {
-                console.error('Save failed with status:', response.status);
-                const errorText = await response.text();
-                console.error('Error response:', errorText);
             }
         } catch (error) {
             console.error('Save error:', error);
-            alert('Error saving data. Check console (F12) for details.');
+            alert('Error saving data.');
         }
         this.hideLoading();
         return false;
@@ -1124,14 +1110,10 @@ const app = {
         this.currentTrainingId = null;
     },
 
-    showChecklist(trainingId, skipAuth = false) {
+    showChecklist(trainingId) {
         this.currentTrainingId = trainingId;
         const training = this.trainings.find(t => t.id === trainingId);
         if (!training) return;
-
-        if (!skipAuth && !this.isAuthenticated) {
-            this.isAuthenticated = false;
-        }
 
         document.getElementById('dashboardView').classList.add('hidden');
         document.getElementById('createView').classList.add('hidden');
@@ -1148,17 +1130,13 @@ const app = {
         
         let trainingId;
         let attempts = 0;
-        const maxAttempts = 1000;
         
         do {
             const numbers = Math.floor(100 + Math.random() * 900);
             trainingId = `${letters}${numbers}`;
             attempts++;
-            
-            const exists = this.trainings.some(t => t.trainingId === trainingId);
-            if (!exists) break;
-            
-        } while (attempts < maxAttempts);
+            if (!this.trainings.some(t => t.trainingId === trainingId)) break;
+        } while (attempts < 1000);
         
         return trainingId;
     },
@@ -1177,7 +1155,7 @@ const app = {
         }
 
         if (!this.editMode && !password) {
-            alert('Please set a password for this training!');
+            alert('Please set a password!');
             return;
         }
 
@@ -1189,66 +1167,47 @@ const app = {
         const hashPassword = (pwd) => {
             let hash = 0;
             for (let i = 0; i < pwd.length; i++) {
-                const char = pwd.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
+                hash = ((hash << 5) - hash) + pwd.charCodeAt(i);
                 hash = hash & hash;
             }
             return hash.toString();
         };
 
-        const getPakistanTime = () => {
-            return new Date().toLocaleString('en-US', { 
-                timeZone: 'Asia/Karachi',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            });
-        };
-
-        if (this.editMode && this.currentTrainingId) {
+        if (this.editMode) {
             const training = this.trainings.find(t => t.id === this.currentTrainingId);
             training.title = title;
             training.startDate = startDate;
             training.endDate = endDate;
             training.checkerName = checker;
             training.venue = venue;
-            if (password) {
-                training.passwordHash = hashPassword(password);
-            }
+            if (password) training.passwordHash = hashPassword(password);
         } else {
-            const trainingId = this.generateTrainingId(title);
             const newTraining = {
                 id: Date.now(),
-                trainingId: trainingId,
-                title: title,
-                startDate: startDate,
-                endDate: endDate,
+                trainingId: this.generateTrainingId(title),
+                title, startDate, endDate,
                 checkerName: checker,
-                venue: venue,
+                venue,
                 passwordHash: hashPassword(password),
-                createdAt: getPakistanTime(),
+                createdAt: new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }),
                 checklist: this.initializeChecklist()
             };
             this.trainings.push(newTraining);
         }
 
-        const success = await this.saveToSheets();
-        if (success) {
-            document.getElementById('trainingPassword').placeholder = 'Set a password to edit this training';
-            document.getElementById('trainingPassword').required = true;
+        if (await this.saveToSheets()) {
             this.showDashboard();
         }
     },
 
     initializeChecklist() {
         const checklist = {};
-        for (const [section, data] of Object.entries(this.checklistData)) {
+        for (const [section, data] of Object.entries(this.checklistTemplate)) {
             checklist[section] = data.items.map(item => ({
-                ...item,
+                id: item.id,
+                action: item.action,
+                timeline: item.timeline,
+                weight: item.weight,  // Include weight from template
                 status: null,
                 notes: '',
                 signature: '',
@@ -1260,9 +1219,8 @@ const app = {
 
     editTrainingInfo() {
         if (!this.isAuthenticated) {
-            alert('⚠️ Please unlock the training with password first to edit information.');
+            alert('⚠️ Unlock with password first.');
             this.requestPasswordForEditing();
-            this.pendingAction = 'editInfo';
             return;
         }
 
@@ -1276,106 +1234,65 @@ const app = {
         document.getElementById('checkerName').value = training.checkerName;
         document.getElementById('venue').value = training.venue;
         document.getElementById('trainingPassword').value = '';
-        document.getElementById('trainingPassword').placeholder = 'Leave blank to keep current password';
+        document.getElementById('trainingPassword').placeholder = 'Leave blank to keep current';
         document.getElementById('trainingPassword').required = false;
         document.getElementById('formTitle').textContent = 'Edit Training';
-
         this.showCreateForm();
     },
 
     async deleteTraining() {
         if (!this.isAuthenticated) {
-            alert('⚠️ Please unlock the training with password first to delete it.');
-            this.requestPasswordForEditing();
+            alert('⚠️ Unlock with password first.');
             return;
         }
-        
-        if (!confirm('⚠️ Are you sure you want to delete this training? This action cannot be undone.')) return;
+        if (!confirm('Delete training?')) return;
         this.trainings = this.trainings.filter(t => t.id !== this.currentTrainingId);
-        const success = await this.saveToSheets();
-        if (success) this.showDashboard();
+        if (await this.saveToSheets()) this.showDashboard();
     },
 
     getActiveSection(training) {
         const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
-        today.setHours(0, 0, 0, 0);
-        const startDate = new Date(training.startDate);
-        startDate.setHours(0, 0, 0, 0);
-        const endDate = new Date(training.endDate);
-        endDate.setHours(0, 0, 0, 0);
+        today.setHours(0,0,0,0);
+        const start = new Date(training.startDate);
+        start.setHours(0,0,0,0);
+        const end = new Date(training.endDate);
+        end.setHours(0,0,0,0);
+        const days = Math.ceil((end - start) / 86400000) + 1;
 
-        const durationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-
-        // One-day training (start and end on same day)
-        if (durationDays === 1) {
-            if (today < startDate) {
-                return 'preTraining';
-            } else if (today.getTime() === startDate.getTime()) {
-                // On training day - all sections open
-                return 'allSections';
-            } else {
-                return 'postTraining';
-            }
-        }
-
-        // Training longer than 3 days - keep all sections open during training period
-        if (durationDays > 3) {
-            if (today < startDate) {
-                return 'preTraining';
-            } else if (today >= startDate && today <= endDate) {
-                return 'allSections';
-            } else {
-                return 'postTraining';
-            }
-        }
-
-        // 2-3 day trainings - use grace period logic
-        const preTrainingGraceEnd = new Date(startDate);
-        preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
-
-        const trainingDayGraceEnd = new Date(endDate);
-        trainingDayGraceEnd.setDate(trainingDayGraceEnd.getDate() + 1);
-
-        if (today < startDate) {
-            return 'preTraining';
-        } else if (today >= startDate && today < preTrainingGraceEnd) {
-            return 'both_preTraining_trainingDay';
-        } else if (today >= preTrainingGraceEnd && today <= endDate) {
-            return 'trainingDay';
-        } else if (today > endDate && today <= trainingDayGraceEnd) {
-            return 'both_trainingDay_postTraining';
-        } else {
+        if (days === 1) {
+            if (today < start) return 'preTraining';
+            if (today.getTime() === start.getTime()) return 'allSections';
             return 'postTraining';
         }
+
+        if (days > 3) {
+            if (today < start) return 'preTraining';
+            if (today >= start && today <= end) return 'allSections';
+            return 'postTraining';
+        }
+
+        const graceEnd = new Date(start);
+        graceEnd.setDate(graceEnd.getDate() + 1);
+        const trainGraceEnd = new Date(end);
+        trainGraceEnd.setDate(trainGraceEnd.getDate() + 1);
+
+        if (today < start) return 'preTraining';
+        if (today >= start && today < graceEnd) return 'both_preTraining_trainingDay';
+        if (today >= graceEnd && today <= end) return 'trainingDay';
+        if (today > end && today <= trainGraceEnd) return 'both_trainingDay_postTraining';
+        return 'postTraining';
     },
 
     getSectionStatus(sectionKey, activeSection, training) {
-        const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
-        today.setHours(0, 0, 0, 0);
-        const startDate = new Date(training.startDate);
-        startDate.setHours(0, 0, 0, 0);
-        
-        const preTrainingGraceEnd = new Date(startDate);
-        preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
-
         if (activeSection === 'allSections') {
-            return { 
-                locked: !this.isAuthenticated, 
-                label: '🔓 Active Now',
-                isGracePeriod: false
-            };
+            return { locked: !this.isAuthenticated, label: '🔓 Active Now', isGracePeriod: false };
         }
 
         if (activeSection === 'both_preTraining_trainingDay') {
             if (sectionKey === 'preTraining' || sectionKey === 'trainingDay') {
-                const daysLeft = sectionKey === 'preTraining' 
-                    ? Math.ceil((preTrainingGraceEnd - today) / (1000 * 60 * 60 * 24))
-                    : null;
                 return { 
-                    locked: !this.isAuthenticated, 
-                    label: sectionKey === 'preTraining' 
-                        ? `🔓 Grace Period (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)` 
-                        : '🔓 Active Now',
+                    locked: !this.isAuthenticated,
+                    label: sectionKey === 'preTraining' ? '🔓 Grace Period' : '🔓 Active Now',
                     isGracePeriod: sectionKey === 'preTraining'
                 };
             }
@@ -1383,26 +1300,14 @@ const app = {
         }
 
         if (activeSection === 'both_trainingDay_postTraining') {
-            const endDate = new Date(training.endDate);
-            endDate.setHours(0, 0, 0, 0);
-            const trainingDayGraceEnd = new Date(endDate);
-            trainingDayGraceEnd.setDate(trainingDayGraceEnd.getDate() + 1);
-            
             if (sectionKey === 'trainingDay' || sectionKey === 'postTraining') {
-                const daysLeft = sectionKey === 'trainingDay'
-                    ? Math.ceil((trainingDayGraceEnd - today) / (1000 * 60 * 60 * 24))
-                    : null;
                 return { 
-                    locked: !this.isAuthenticated, 
-                    label: sectionKey === 'trainingDay'
-                        ? `🔓 Grace Period (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)`
-                        : '🔓 Active Now',
+                    locked: !this.isAuthenticated,
+                    label: sectionKey === 'trainingDay' ? '🔓 Grace Period' : '🔓 Active Now',
                     isGracePeriod: sectionKey === 'trainingDay'
                 };
             }
-            if (sectionKey === 'preTraining') {
-                return { locked: true, label: '✅ Completed' };
-            }
+            if (sectionKey === 'preTraining') return { locked: true, label: '✅ Completed' };
             return { locked: true, label: '🔒 Locked' };
         }
 
@@ -1410,106 +1315,81 @@ const app = {
             return { locked: !this.isAuthenticated, label: '🔓 Active Now', isGracePeriod: false };
         }
         
-        const sectionOrder = ['preTraining', 'trainingDay', 'postTraining'];
-        const activeSectionIndex = sectionOrder.indexOf(activeSection);
-        const currentSectionIndex = sectionOrder.indexOf(sectionKey);
+        const order = ['preTraining', 'trainingDay', 'postTraining'];
+        const activeIdx = order.indexOf(activeSection);
+        const currentIdx = order.indexOf(sectionKey);
         
-        if (currentSectionIndex < activeSectionIndex) {
-            return { locked: true, label: '✅ Completed', isGracePeriod: false };
-        }
-        return { locked: true, label: '🔒 Locked', isGracePeriod: false };
+        if (currentIdx < activeIdx) return { locked: true, label: '✅ Completed' };
+        return { locked: true, label: '🔒 Locked' };
     },
 
     renderTrainingList() {
         const container = document.getElementById('trainingList');
-        if (this.trainings.length === 0) {
-            container.innerHTML = '<div class="empty-state"><h3>No trainings yet</h3><p>Create your first training</p></div>';
+        if (!this.trainings.length) {
+            container.innerHTML = '<div class="empty-state"><h3>No trainings</h3><p>Create your first one</p></div>';
             return;
         }
 
-        container.innerHTML = this.trainings.map(training => {
-            const progress = this.calculateProgress(training);
-            const startDate = new Date(training.startDate).toLocaleDateString();
-            const endDate = new Date(training.endDate).toLocaleDateString();
-            const activeSection = this.getActiveSection(training);
-            const sectionNames = {
-                'preTraining': 'Pre-Training',
-                'trainingDay': 'Training Day',
-                'postTraining': 'Post-Training',
-                'both_preTraining_trainingDay': 'Pre-Training & Training Day',
-                'both_trainingDay_postTraining': 'Training Day & Post-Training',
-                'allSections': 'All Sections Active'
+        container.innerHTML = this.trainings.map(t => {
+            const progress = this.calculateProgress(t);
+            const active = this.getActiveSection(t);
+            const names = {
+                preTraining: 'Pre-Training',
+                trainingDay: 'Training Day',
+                postTraining: 'Post-Training',
+                both_preTraining_trainingDay: 'Pre & Training Day',
+                both_trainingDay_postTraining: 'Training Day & Post',
+                allSections: 'All Sections Active'
             };
             
             return `
-                <div class="training-card" onclick="app.showChecklist(${training.id})">
-                    <h3>${training.title}</h3>
-                    <p style="color: #667eea; font-weight: 700; font-size: 16px; margin-bottom: 10px;">📋 ID: ${training.trainingId || 'N/A'}</p>
-                    <p><strong>Start:</strong> ${startDate}</p>
-                    <p><strong>End:</strong> ${endDate}</p>
-                    <p><strong>Venue:</strong> ${training.venue}</p>
-                    <p><strong>Checker:</strong> ${training.checkerName}</p>
-                    <p style="color: #667eea; font-weight: 600; margin-top: 8px;">📍 ${sectionNames[activeSection]}</p>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: ${progress}%"></div>
-                    </div>
-                    <p style="margin-top: 10px; text-align: center; font-weight: 600;">${progress}% Complete</p>
+                <div class="training-card" onclick="app.showChecklist(${t.id})">
+                    <h3>${t.title}</h3>
+                    <p style="color: #667eea; font-weight: 700;">📋 ${t.trainingId}</p>
+                    <p><strong>Start:</strong> ${new Date(t.startDate).toLocaleDateString()}</p>
+                    <p><strong>End:</strong> ${new Date(t.endDate).toLocaleDateString()}</p>
+                    <p><strong>Venue:</strong> ${t.venue}</p>
+                    <p><strong>Checker:</strong> ${t.checkerName}</p>
+                    <p style="color: #667eea; font-weight: 600;">📍 ${names[active]}</p>
+                    <div class="progress"><div class="progress-bar" style="width: ${progress}%"></div></div>
+                    <p style="margin-top: 10px; text-align: center; font-weight: 600;">${progress}%</p>
                 </div>
             `;
         }).join('');
     },
 
     renderTrainingHeader(training) {
-        const header = document.getElementById('trainingHeader');
-        const startDate = new Date(training.startDate).toLocaleDateString();
-        const endDate = new Date(training.endDate).toLocaleDateString();
-        
-        header.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+        document.getElementById('trainingHeader').innerHTML = `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
                 <div>
                     <h2 style="color: #667eea; margin-bottom: 5px;">${training.title}</h2>
-                    <p style="color: #764ba2; font-weight: 700; font-size: 18px;">📋 Training ID: ${training.trainingId || 'N/A'}</p>
+                    <p style="color: #764ba2; font-weight: 700;">📋 ${training.trainingId}</p>
                 </div>
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                <div><strong>Start:</strong> ${startDate}</div>
-                <div><strong>End:</strong> ${endDate}</div>
+                <div><strong>Start:</strong> ${new Date(training.startDate).toLocaleDateString()}</div>
+                <div><strong>End:</strong> ${new Date(training.endDate).toLocaleDateString()}</div>
                 <div><strong>Venue:</strong> ${training.venue}</div>
                 <div><strong>Checker:</strong> ${training.checkerName}</div>
             </div>
         `;
 
-        const activeSection = this.getActiveSection(training);
         const phaseInfo = document.getElementById('phaseInfo');
-        const phaseTitle = document.getElementById('phaseTitle');
-        const phaseDescription = document.getElementById('phaseDescription');
-        
         phaseInfo.style.display = 'block';
+        const active = this.getActiveSection(training);
         
-        const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));
-        today.setHours(0, 0, 0, 0);
-        const start = new Date(training.startDate);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(training.endDate);
-        end.setHours(0, 0, 0, 0);
-
-        if (activeSection === 'preTraining') {
-            const daysUntil = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
-            phaseTitle.textContent = '📍 Pre-Training Phase';
-            phaseDescription.textContent = `Training starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+        if (active === 'preTraining') {
+            document.getElementById('phaseTitle').textContent = '📍 Pre-Training';
+            document.getElementById('phaseDescription').textContent = 'Preparing for training';
             phaseInfo.style.background = '#dbeafe';
-            phaseInfo.style.borderLeft = '4px solid #3b82f6';
-        } else if (activeSection === 'trainingDay') {
-            phaseTitle.textContent = '📍 Training Day Phase';
-            phaseDescription.textContent = 'Training is in progress';
+        } else if (active.includes('trainingDay')) {
+            document.getElementById('phaseTitle').textContent = '📍 Training Day';
+            document.getElementById('phaseDescription').textContent = 'In progress';
             phaseInfo.style.background = '#dcfce7';
-            phaseInfo.style.borderLeft = '4px solid #10b981';
         } else {
-            const daysSince = Math.ceil((today - end) / (1000 * 60 * 60 * 24));
-            phaseTitle.textContent = '📍 Post-Training Phase';
-            phaseDescription.textContent = `Training ended ${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
+            document.getElementById('phaseTitle').textContent = '📍 Post-Training';
+            document.getElementById('phaseDescription').textContent = 'Follow-up phase';
             phaseInfo.style.background = '#f3e8ff';
-            phaseInfo.style.borderLeft = '4px solid #a855f7';
         }
     },
 
@@ -1520,106 +1400,61 @@ const app = {
 
         if (!this.isAuthenticated) {
             html += `
-                <div class="info-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; margin-bottom: 25px;">
-                    <h4 style="color: #92400e;">🔒 View-Only Mode</h4>
-                    <p style="color: #78350f; margin-bottom: 15px;">You are viewing this training in read-only mode. To make changes, unlock with password.</p>
-                    <button class="btn btn-primary" onclick="app.requestPasswordForEditing()" style="margin-top: 10px;">
-                        🔓 Unlock for Editing
-                    </button>
+                <div class="info-box">
+                    <h4>🔒 View-Only Mode</h4>
+                    <p>Unlock to edit</p>
+                    <button class="btn btn-primary" onclick="app.requestPasswordForEditing()">🔓 Unlock</button>
                 </div>
             `;
         }
 
-        for (const [section, data] of Object.entries(this.checklistData)) {
+        for (const [section, data] of Object.entries(this.checklistTemplate)) {
             const status = this.getSectionStatus(section, activeSection, training);
-            const sectionClass = status.locked ? 'locked' : '';
+            const items = training.checklist[section] || [];
             
-            const sectionItems = training.checklist[section].slice();
-            const sortedItems = sectionItems.sort((a, b) => {
-                const order = {null: 0, 'no': 1, 'yes': 2, 'na': 2};
-                return (order[a.status] || 0) - (order[b.status] || 0);
-            });
-            
-            html += `
-                <div class="checklist-section ${sectionClass}">
-                    <h2>
-                        <span>${data.title}</span>
-                        <span class="section-status ${status.locked ? '' : 'active'}">${status.label}</span>
-                    </h2>
-            `;
+            html += `<div class="checklist-section ${status.locked ? 'locked' : ''}">
+                <h2><span>${data.title}</span><span class="section-status ${!status.locked?'active':''}">${status.label}</span></h2>`;
 
             if (status.isGracePeriod && this.isAuthenticated) {
-                html += `
-                    <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <p style="color: #1e40af; margin: 0; font-size: 14px;">
-                            <strong>⏰ Grace Period Active:</strong> This section can still be edited but will lock soon.
-                        </p>
-                    </div>
-                `;
+                html += `<div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <p style="color: #1e40af; margin: 0;">⏰ Grace Period Active</p></div>`;
             }
 
-            sortedItems.forEach((item) => {
-                const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
-                const itemData = data.items.find(i => i.id === item.id);
-                const weight = itemData ? itemData.weight : 0;
-                const hasOptional = item.action.includes('(If Required)') || item.action.includes('(If Applicable)');
-                const itemClass = item.status === 'yes' ? 'completed' : 
-                                item.status === 'no' ? 'status-no' : 
-                                item.status === 'na' ? 'status-na' : '';
+            items.forEach((item, idx) => {
+                const templateItem = data.items.find(t => t.id === item.id);
+                const weight = templateItem ? templateItem.weight : 0;
+                const hasOpt = item.action.includes('(If Required)') || item.action.includes('(If Applicable)');
+                const cls = item.status === 'yes' ? 'completed' : item.status === 'no' ? 'status-no' : item.status === 'na' ? 'status-na' : '';
                 
-                html += `
-                    <div class="checklist-item ${itemClass}">
-                        <div class="checklist-item-content" style="flex: 1;">
-                            <div class="checklist-item-title">${item.id}. ${item.action}</div>
-                            <div class="checklist-item-details">
-                                <span class="detail-badge">📊 ${weight}%</span>
-                                ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
-                                ${item.completedDate ? `<span class="detail-badge">✅ ${item.completedDate}</span>` : ''}
-                            </div>
-                            
-                            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-                                <button class="btn-status ${item.status === 'yes' ? 'btn-status-yes-active' : 'btn-status-yes'}" 
-                                        onclick="app.setItemStatus('${section}', ${originalIndex}, 'yes')"
-                                        ${status.locked ? 'disabled' : ''}>
-                                    ${item.status === 'yes' ? '✅ Yes' : 'Yes'}
-                                </button>
-                                <button class="btn-status ${item.status === 'no' ? 'btn-status-no-active' : 'btn-status-no'}" 
-                                        onclick="app.setItemStatus('${section}', ${originalIndex}, 'no')"
-                                        ${status.locked ? 'disabled' : ''}>
-                                    ${item.status === 'no' ? '❌ No' : 'No'}
-                                </button>
-                                ${hasOptional ? `
-                                    <button class="btn-status ${item.status === 'na' ? 'btn-status-na-active' : 'btn-status-na'}" 
-                                            onclick="app.setItemStatus('${section}', ${originalIndex}, 'na')"
-                                            ${status.locked ? 'disabled' : ''}>
-                                        ${item.status === 'na' ? '⊘ N/A' : 'N/A'}
-                                    </button>
-                                ` : ''}
-                            </div>
-                            
-                            ${item.status === 'no' || item.notes ? `
-                                <div style="margin-top: 12px;">
-                                    <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 5px; font-weight: 600;">
-                                        ${item.status === 'no' ? 'Reason for No (Required):' : 'Notes:'}
-                                    </label>
-                                    <textarea 
-                                        class="notes-input" 
-                                        placeholder="${item.status === 'no' ? 'Please explain why this item is marked as No...' : 'Additional notes...'}"
-                                        ${status.locked ? 'disabled' : ''}
-                                        onchange="app.updateItemNotes('${section}', ${originalIndex}, this.value)"
-                                        rows="2">${item.notes || ''}</textarea>
-                                </div>
-                            ` : ''}
-                            
-                            <input type="text" 
-                                   class="signature-input" 
-                                   placeholder="Details/ Signature..." 
-                                   value="${item.signature || ''}"
-                                   ${status.locked ? 'disabled' : ''}
-                                   onchange="app.updateSignature('${section}', ${originalIndex}, this.value)">
+                html += `<div class="checklist-item ${cls}">
+                    <div class="checklist-item-content" style="flex: 1;">
+                        <div class="checklist-item-title">${item.id}. ${item.action}</div>
+                        <div class="checklist-item-details">
+                            <span class="detail-badge">📊 ${weight}%</span>
+                            ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
+                            ${item.completedDate ? `<span class="detail-badge">✅ ${item.completedDate}</span>` : ''}
                         </div>
-                    </div>
-                `;
+                        <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                            <button class="btn-status ${item.status==='yes'?'btn-status-yes-active':'btn-status-yes'}" 
+                                    onclick="app.setItemStatus('${section}',${idx},'yes')" ${status.locked?'disabled':''}>
+                                ${item.status==='yes'?'✅ Yes':'Yes'}</button>
+                            <button class="btn-status ${item.status==='no'?'btn-status-no-active':'btn-status-no'}" 
+                                    onclick="app.setItemStatus('${section}',${idx},'no')" ${status.locked?'disabled':''}>
+                                ${item.status==='no'?'❌ No':'No'}</button>
+                            ${hasOpt?`<button class="btn-status ${item.status==='na'?'btn-status-na-active':'btn-status-na'}" 
+                                    onclick="app.setItemStatus('${section}',${idx},'na')" ${status.locked?'disabled':''}>
+                                ${item.status==='na'?'⊘ N/A':'N/A'}</button>`:''}
+                        </div>
+                        ${item.status==='no'||item.notes?`<div style="margin-top: 12px;">
+                            <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 5px; font-weight: 600;">
+                                ${item.status==='no'?'Reason (Required)':'Notes:'}</label>
+                            <textarea class="notes-input" ${status.locked?'disabled':''}
+                                onchange="app.updateItemNotes('${section}',${idx},this.value)" rows="2">${item.notes||''}</textarea>
+                        </div>`:''}
+                        <input type="text" class="signature-input" placeholder="Details/ Signature..." 
+                               value="${item.signature||''}" ${status.locked?'disabled':''}
+                               onchange="app.updateSignature('${section}',${idx},this.value)">
+                    </div></div>`;
             });
 
             html += `</div>`;
@@ -1628,19 +1463,18 @@ const app = {
         container.innerHTML = html;
     },
 
-    setItemStatus(section, index, status) {
+    setItemStatus(section, idx, status) {
         const training = this.trainings.find(t => t.id === this.currentTrainingId);
-        const item = training.checklist[section][index];
+        const item = training.checklist[section][idx];
         
         if (status === 'no' && !item.notes) {
             item.status = status;
             this.markPendingChanges();
             this.renderChecklist(training);
             this.updateStats(training);
-            
             setTimeout(() => {
-                const textarea = document.querySelectorAll('.notes-input')[0];
-                if (textarea) textarea.focus();
+                const ta = document.querySelector('.notes-input');
+                if (ta) ta.focus();
             }, 100);
             return;
         }
@@ -1648,16 +1482,10 @@ const app = {
         item.status = status;
         
         if (status === 'yes' || status === 'na') {
-            const pakTime = new Date().toLocaleString('en-US', { 
-                timeZone: 'Asia/Karachi',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
+            item.completedDate = new Date().toLocaleString('en-US', { 
+                timeZone: 'Asia/Karachi', year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: true
             });
-            item.completedDate = pakTime;
         } else {
             item.completedDate = '';
         }
@@ -1667,15 +1495,15 @@ const app = {
         this.updateStats(training);
     },
 
-    updateItemNotes(section, index, notes) {
+    updateItemNotes(section, idx, notes) {
         const training = this.trainings.find(t => t.id === this.currentTrainingId);
-        training.checklist[section][index].notes = notes;
+        training.checklist[section][idx].notes = notes;
         this.markPendingChanges();
     },
 
-    updateSignature(section, index, value) {
+    updateSignature(section, idx, val) {
         const training = this.trainings.find(t => t.id === this.currentTrainingId);
-        training.checklist[section][index].signature = value;
+        training.checklist[section][idx].signature = val;
         this.markPendingChanges();
     },
 
@@ -1689,66 +1517,54 @@ const app = {
         btn.textContent = '💾 Saving...';
         btn.disabled = true;
         
-        const success = await this.saveToSheets();
-        
-        if (success) {
+        if (await this.saveToSheets()) {
             this.pendingChanges = false;
             btn.classList.add('hidden');
-            btn.textContent = '✅ Confirm Changes';
+            btn.textContent = '✅ Confirm';
             btn.disabled = false;
-            alert('Changes saved successfully!');
+            alert('Saved!');
         } else {
-            btn.textContent = '✅ Confirm Changes';
+            btn.textContent = '✅ Confirm';
             btn.disabled = false;
         }
     },
 
     calculateProgress(training) {
-        let totalWeight = 0;
-        let completedWeight = 0;
+        let total = 0, completed = 0;
         
-        for (const [sectionKey, section] of Object.entries(training.checklist)) {
-            const sectionData = this.checklistData[sectionKey];
-            if (!sectionData) continue;
+        for (const [sectionKey, items] of Object.entries(training.checklist)) {
+            const templateSection = this.checklistTemplate[sectionKey];
+            if (!templateSection) continue;
             
-            section.forEach(item => {
-                const itemData = sectionData.items.find(i => i.id === item.id);
-                if (itemData) {
-                    // All items count toward total
-                    totalWeight += itemData.weight;
-                    
-                    // Yes, No, and N/A all count as completed
+            items.forEach(item => {
+                const templateItem = templateSection.items.find(t => t.id === item.id);
+                if (templateItem) {
+                    const weight = templateItem.weight;  // ALWAYS use template weight
+                    total += weight;
                     if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
-                        completedWeight += itemData.weight;
+                        completed += weight;
                     }
                 }
             });
         }
         
-        return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
+        return total > 0 ? Math.round((completed / total) * 100) : 0;
     },
 
     updateStats(training) {
-        let totalWeight = 0;
-        let completedWeight = 0;
-        let totalItems = 0;
-        let completedItems = 0;
+        let total = 0, completed = 0, totalItems = 0, completedItems = 0;
         
-        for (const [sectionKey, section] of Object.entries(training.checklist)) {
-            const sectionData = this.checklistData[sectionKey];
-            if (!sectionData) continue;
+        for (const [sectionKey, items] of Object.entries(training.checklist)) {
+            const templateSection = this.checklistTemplate[sectionKey];
+            if (!templateSection) continue;
             
-            section.forEach(item => {
+            items.forEach(item => {
                 totalItems++;
-                
-                const itemData = sectionData.items.find(i => i.id === item.id);
-                if (itemData) {
-                    // All items count toward total weight
-                    totalWeight += itemData.weight;
-                    
-                    // Yes, No, and N/A all count as completed
+                const templateItem = templateSection.items.find(t => t.id === item.id);
+                if (templateItem) {
+                    total += templateItem.weight;
                     if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
-                        completedWeight += itemData.weight;
+                        completed += templateItem.weight;
                         completedItems++;
                     }
                 }
@@ -1758,7 +1574,7 @@ const app = {
         document.getElementById('totalItems').textContent = totalItems;
         document.getElementById('completedItems').textContent = completedItems;
         document.getElementById('progressPercentage').textContent = 
-            totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) + '%' : '0%';
+            total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
     },
 
     requestPasswordForEditing() {
@@ -1766,7 +1582,6 @@ const app = {
         document.getElementById('passwordInput').value = '';
         document.getElementById('passwordError').style.display = 'none';
         document.getElementById('passwordInput').focus();
-        
         document.getElementById('passwordInput').onkeypress = (e) => {
             if (e.key === 'Enter') this.verifyPassword();
         };
@@ -1776,37 +1591,27 @@ const app = {
         const training = this.trainings.find(t => t.id === this.currentTrainingId);
         if (!training) return;
 
-        const enteredPassword = document.getElementById('passwordInput').value;
-        
-        const hashPassword = (pwd) => {
-            let hash = 0;
-            for (let i = 0; i < pwd.length; i++) {
-                const char = pwd.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return hash.toString();
-        };
+        const pwd = document.getElementById('passwordInput').value;
+        let hash = 0;
+        for (let i = 0; i < pwd.length; i++) {
+            hash = ((hash << 5) - hash) + pwd.charCodeAt(i);
+            hash = hash & hash;
+        }
 
-        const enteredHash = hashPassword(enteredPassword);
-
-        if (enteredHash === training.passwordHash) {
+        if (hash.toString() === training.passwordHash) {
             this.isAuthenticated = true;
             this.closePasswordModal();
             this.renderChecklist(training);
-            alert('✅ Authentication successful! You can now edit the checklist.');
+            alert('✅ Unlocked!');
         } else {
-            document.getElementById('passwordError').textContent = '❌ Incorrect password. Please try again.';
+            document.getElementById('passwordError').textContent = '❌ Wrong password';
             document.getElementById('passwordError').style.display = 'block';
             document.getElementById('passwordInput').value = '';
-            document.getElementById('passwordInput').focus();
         }
     },
 
     closePasswordModal() {
         document.getElementById('passwordModal').style.display = 'none';
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordError').style.display = 'none';
     },
 
     clearForm() {
@@ -1819,13 +1624,12 @@ const app = {
     },
 
     exportAllData() {
-        const dataStr = JSON.stringify(this.trainings, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `training-data-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
+        const blob = new Blob([JSON.stringify(this.trainings, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `training-data-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
         URL.revokeObjectURL(url);
     }
 };
