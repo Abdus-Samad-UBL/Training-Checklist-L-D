@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>L&D Training Checklist Manager</title>
+    <title>L&D Training Manager</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -847,7 +847,7 @@
         <div class="main-content">
             <div id="dashboardView">
                 <div class="view-selector">
-                    <button class="btn btn-primary" onclick="app.showCreateForm()">➕ Create New Training</button>
+                    <button class="btn btn-primary" onclick="app.createNewTraining()">➕ Create New Training</button>
                     <button class="btn btn-secondary" onclick="app.loadTrainings()">🔄 Refresh</button>
                     <button class="btn btn-secondary" onclick="app.exportAllData()">📥 Export</button>
                 </div>
@@ -1096,14 +1096,25 @@ const app = {
         this.renderTrainingList();
     },
 
+    createNewTraining() {
+        this.editMode = false;
+        this.currentTrainingId = null;
+        document.getElementById('formTitle').textContent = 'Create New Training';
+        this.clearForm();
+        this.showCreateForm();
+    },
+
     showCreateForm() {
         document.getElementById('dashboardView').classList.add('hidden');
         document.getElementById('createView').classList.remove('hidden');
         document.getElementById('checklistView').classList.add('hidden');
-        document.getElementById('formTitle').textContent = 'Create New Training';
-        this.clearForm();
-        this.editMode = false;
-        this.currentTrainingId = null;
+        
+        // Only reset if not in edit mode
+        if (!this.editMode) {
+            document.getElementById('formTitle').textContent = 'Create New Training';
+            this.clearForm();
+            this.currentTrainingId = null;
+        }
     },
 
     showChecklist(trainingId, skipAuth = false) {
@@ -1192,7 +1203,14 @@ const app = {
         };
 
         if (this.editMode && this.currentTrainingId) {
+            console.log('EDIT MODE - Updating existing training:', this.currentTrainingId);
             const training = this.trainings.find(t => t.id === this.currentTrainingId);
+            if (!training) {
+                alert('Error: Training not found!');
+                console.error('Training with ID', this.currentTrainingId, 'not found in:', this.trainings);
+                return;
+            }
+            console.log('Found training to update:', training.trainingId);
             training.title = title;
             training.startDate = startDate;
             training.endDate = endDate;
@@ -1201,7 +1219,9 @@ const app = {
             if (password) {
                 training.passwordHash = hashPassword(password);
             }
+            console.log('Training updated successfully');
         } else {
+            console.log('CREATE MODE - Creating new training');
             const trainingId = this.generateTrainingId(title);
             const newTraining = {
                 id: Date.now(),
@@ -1215,6 +1235,7 @@ const app = {
                 createdAt: getPakistanTime(),
                 checklist: this.initializeChecklist()
             };
+            console.log('New training created:', trainingId);
             this.trainings.push(newTraining);
         }
 
