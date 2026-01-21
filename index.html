@@ -1251,6 +1251,12 @@ const app = {
         const venue = document.getElementById('venue').value.trim();
         const password = document.getElementById('trainingPassword').value;
 
+        console.log('=== SAVE TRAINING DEBUG ===');
+        console.log('Edit Mode:', this.editMode);
+        console.log('Current Training ID:', this.currentTrainingId);
+        console.log('Title:', title);
+        console.log('===========================');
+
         if (!title || !startDate || !endDate || !checker || !venue) {
             alert('Please fill all required fields!');
             return;
@@ -1278,8 +1284,10 @@ const app = {
 
         if (this.editMode && this.currentTrainingId) {
             // EDIT MODE: Update existing training
+            console.log('>>> EDITING EXISTING TRAINING <<<');
             const training = this.trainings.find(t => t.id === this.currentTrainingId);
             if (training) {
+                console.log('Found training to edit:', training.trainingId);
                 training.title = title;
                 training.startDate = startDate;
                 training.endDate = endDate;
@@ -1288,9 +1296,15 @@ const app = {
                 if (password) {
                     training.passwordHash = hashPassword(password);
                 }
+                console.log('Training updated successfully');
+            } else {
+                console.error('Training not found for ID:', this.currentTrainingId);
+                alert('Error: Training not found!');
+                return;
             }
         } else {
             // CREATE MODE: Add new training
+            console.log('>>> CREATING NEW TRAINING <<<');
             const trainingId = this.generateTrainingId(title);
             const newTraining = {
                 id: Date.now(),
@@ -1305,6 +1319,7 @@ const app = {
                 checklist: this.initializeChecklist()
             };
             this.trainings.push(newTraining);
+            console.log('New training created:', trainingId);
         }
 
         const success = await this.saveToSheets();
@@ -1345,7 +1360,11 @@ const app = {
         const training = this.trainings.find(t => t.id === this.currentTrainingId);
         if (!training) return;
 
+        // CRITICAL: Set edit mode and keep currentTrainingId BEFORE switching views
         this.editMode = true;
+        // currentTrainingId is already set from showChecklist, so we keep it
+
+        // Populate form with current values
         document.getElementById('trainingTitle').value = training.title;
         document.getElementById('trainingStartDate').value = training.startDate;
         document.getElementById('trainingEndDate').value = training.endDate;
@@ -1354,9 +1373,13 @@ const app = {
         document.getElementById('trainingPassword').value = '';
         document.getElementById('trainingPassword').placeholder = 'Leave blank to keep current password';
         document.getElementById('trainingPassword').required = false;
-        document.getElementById('formTitle').textContent = 'Edit Training';
+        document.getElementById('formTitle').textContent = `Edit Training: ${training.trainingId}`;
 
-        this.showCreateForm();
+        // Switch to create/edit view
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('checklistView').classList.add('hidden');
+        document.getElementById('createView').classList.remove('hidden');
+        document.getElementById('floatingConfirm').classList.remove('visible');
     },
 
     async deleteTraining() {
