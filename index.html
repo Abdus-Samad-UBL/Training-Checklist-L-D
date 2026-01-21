@@ -1277,16 +1277,20 @@ const app = {
         };
 
         if (this.editMode && this.currentTrainingId) {
+            // EDIT MODE: Update existing training
             const training = this.trainings.find(t => t.id === this.currentTrainingId);
-            training.title = title;
-            training.startDate = startDate;
-            training.endDate = endDate;
-            training.checkerName = checker;
-            training.venue = venue;
-            if (password) {
-                training.passwordHash = hashPassword(password);
+            if (training) {
+                training.title = title;
+                training.startDate = startDate;
+                training.endDate = endDate;
+                training.checkerName = checker;
+                training.venue = venue;
+                if (password) {
+                    training.passwordHash = hashPassword(password);
+                }
             }
         } else {
+            // CREATE MODE: Add new training
             const trainingId = this.generateTrainingId(title);
             const newTraining = {
                 id: Date.now(),
@@ -1305,9 +1309,14 @@ const app = {
 
         const success = await this.saveToSheets();
         if (success) {
+            // Reset form state
+            this.editMode = false;
+            this.currentTrainingId = null;
             document.getElementById('trainingPassword').placeholder = 'Set a password to edit this training';
             document.getElementById('trainingPassword').required = true;
-            this.showDashboard();
+            
+            alert('✅ Training saved successfully!');
+            await this.loadTrainings(); // Reload to get fresh data
         }
     },
 
