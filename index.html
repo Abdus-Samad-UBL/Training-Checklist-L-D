@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>L&D Training Manager</title>
+    <title>L&D Training Checklist Manager</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -87,11 +87,82 @@
         .main-content { 
             padding: 40px;
             animation: fadeIn 0.8s ease-out;
+            padding-bottom: 100px; /* Space for floating button */
         }
         
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+        
+        /* Floating Confirm Button */
+        .floating-confirm {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            display: none;
+            animation: slideInUp 0.5s ease-out;
+        }
+        
+        .floating-confirm.visible {
+            display: block;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .floating-confirm button {
+            padding: 18px 32px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.5);
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .floating-confirm button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(16, 185, 129, 0.6);
+        }
+        
+        .floating-confirm button:active {
+            transform: translateY(-2px);
+        }
+        
+        .floating-confirm button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            .floating-confirm {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+            }
+            
+            .floating-confirm button {
+                width: 100%;
+                justify-content: center;
+                padding: 16px;
+                font-size: 16px;
+            }
         }
         
         .view-selector {
@@ -830,7 +901,7 @@
         
         /* Responsive improvements */
         @media (max-width: 768px) {
-            .main-content { padding: 25px; }
+            .main-content { padding: 25px; padding-bottom: 100px; }
             .header h1 { font-size: 28px; }
             .training-list { grid-template-columns: 1fr; }
             .stat-card h3 { font-size: 36px; }
@@ -847,7 +918,7 @@
         <div class="main-content">
             <div id="dashboardView">
                 <div class="view-selector">
-                    <button class="btn btn-primary" onclick="app.createNewTraining()">➕ Create New Training</button>
+                    <button class="btn btn-primary" onclick="app.showCreateForm()">➕ Create New Training</button>
                     <button class="btn btn-secondary" onclick="app.loadTrainings()">🔄 Refresh</button>
                     <button class="btn btn-secondary" onclick="app.exportAllData()">📥 Export</button>
                 </div>
@@ -893,7 +964,6 @@
             <div id="checklistView" class="hidden">
                 <button class="btn btn-secondary" onclick="app.showDashboard()" style="margin-bottom: 20px;">← Back</button>
                 <div class="actions-bar">
-                    <button class="btn btn-success hidden" id="confirmBtn" onclick="app.confirmChanges()">✅ Confirm Changes</button>
                     <button class="btn btn-primary" onclick="app.editTrainingInfo()">✏️ Edit Info</button>
                     <button class="btn btn-danger" onclick="app.deleteTraining()">🗑️ Delete</button>
                 </div>
@@ -915,6 +985,14 @@
                 <div id="checklistContainer"></div>
             </div>
         </div>
+    </div>
+
+    <!-- Floating Confirm Button -->
+    <div id="floatingConfirm" class="floating-confirm">
+        <button onclick="app.confirmChanges()">
+            <span>✅</span>
+            <span>Confirm Changes</span>
+        </button>
     </div>
 
     <div id="loadingOverlay" class="loading-overlay">
@@ -954,15 +1032,15 @@ const app = {
             title: "Pre-Training - Program Readiness & Planning",
             totalWeight: 55,
             items: [
-                { id: "1.01", action: "Course announcement", timeline: "1 week before training", weight: 2 },
-                { id: "1.02", action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked", weight: 4 },
-                { id: "1.03", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked", weight: 1.5 },
-                { id: "1.04", action: "Nominations Received", timeline: "Validate audience relevance", weight: 3 },
-                { id: "1.05", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 3 },
-                { id: "1.06", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 5 },
-                { id: "1.07", action: "Pre & Post Assessment Developed", timeline: "Ensure Quilgo link operational", weight: 4 },
-                { id: "1.08", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1.5 },
-                { id: "1.09", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before", weight: 1.5 },
+                { id: "1.1", action: "Course announcement", timeline: "1 week before training", weight: 2 },
+                { id: "1.2", action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked", weight: 4 },
+                { id: "1.3", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked", weight: 1.5 },
+                { id: "1.4", action: "Nominations Received", timeline: "Validate audience relevance", weight: 3 },
+                { id: "1.5", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 3 },
+                { id: "1.6", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 5 },
+                { id: "1.7", action: "Pre & Post Assessment Developed", timeline: "Ensure Quilgo link operational", weight: 4 },
+                { id: "1.8", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1.5 },
+                { id: "1.9", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before", weight: 1.5 },
                 { id: "1.10", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
                 { id: "1.11", action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk", weight: 2 },
                 { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand", weight: 4 },
@@ -979,15 +1057,15 @@ const app = {
             title: "Training Day - Operations & Experience Control",
             totalWeight: 35,
             items: [
-                { id: "2.01", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance", weight: 6 },
-                { id: "2.02", action: "Handout distribution (If Applicable)", timeline: "Before start of training", weight: 3 },
-                { id: "2.03", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate", weight: 5 },
-                { id: "2.04", action: "Water Dispenser", timeline: "Functional before starting of training", weight: 2 },
-                { id: "2.05", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity", weight: 3.5 },
-                { id: "2.06", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training", weight: 3.5 },
-                { id: "2.07", action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning", weight: 3 },
-                { id: "2.08", action: "Feedback Form", timeline: "To be conducted day end", weight: 4 },
-                { id: "2.09", action: "Group Photograph taken", timeline: "Mandatory digital copy", weight: 2 },
+                { id: "2.1", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance", weight: 6 },
+                { id: "2.2", action: "Handout distribution (If Applicable)", timeline: "Before start of training", weight: 3 },
+                { id: "2.3", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate", weight: 5 },
+                { id: "2.4", action: "Water Dispenser", timeline: "Functional before starting of training", weight: 2 },
+                { id: "2.5", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity", weight: 3.5 },
+                { id: "2.6", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training", weight: 3.5 },
+                { id: "2.7", action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning", weight: 3 },
+                { id: "2.8", action: "Feedback Form", timeline: "To be conducted day end", weight: 4 },
+                { id: "2.9", action: "Group Photograph taken", timeline: "Mandatory digital copy", weight: 2 },
                 { id: "2.10", action: "Lunch/Tea timing coordinated", timeline: "Confirm with trainer", weight: 3 }
             ]
         },
@@ -995,12 +1073,12 @@ const app = {
             title: "Post Training - Learning Effectiveness & Closure",
             totalWeight: 10,
             items: [
-                { id: "3.01", action: "Feedback Form Circulation", timeline: "1 day after training concluded", weight: 3 },
-                { id: "3.02", action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded", weight: 1 },
-                { id: "3.03", action: "Pre/Post Assessment Results shared with Stakeholders", timeline: "2-3 days after", weight: 2 },
-                { id: "3.04", action: "Compilation of Feedback", timeline: "2-3 days after", weight: 2 },
-                { id: "3.05", action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week", weight: 1 },
-                { id: "3.06", action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after", weight: 1 }
+                { id: "3.1", action: "Feedback Form Circulation", timeline: "1 day after training concluded", weight: 3 },
+                { id: "3.2", action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded", weight: 1 },
+                { id: "3.3", action: "Pre/Post Assessment Results shared with Stakeholders", timeline: "2-3 days after", weight: 2 },
+                { id: "3.4", action: "Compilation of Feedback", timeline: "2-3 days after", weight: 2 },
+                { id: "3.5", action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week", weight: 1 },
+                { id: "3.6", action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after", weight: 1 }
             ]
         }
     },
@@ -1017,6 +1095,20 @@ const app = {
         document.getElementById('loadingOverlay').style.display = 'none';
     },
 
+    getPakistanTime() {
+        const date = new Date();
+        const options = {
+            timeZone: 'Asia/Karachi',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        return date.toLocaleString('en-US', options) + ' PKT';
+    },
+
     async loadTrainings() {
         this.showLoading();
         try {
@@ -1026,31 +1118,35 @@ const app = {
                 const text = await response.text();
                 console.log('Raw response:', text);
                 this.trainings = JSON.parse(text);
-                console.log('Parsed trainings:', this.trainings);
-                console.log('Number of trainings loaded:', this.trainings.length);
                 
-                // Merge weights from checklistData into loaded items
+                // Ensure weights are numbers
                 this.trainings.forEach(training => {
-                    for (const [sectionKey, items] of Object.entries(training.checklist)) {
-                        const sectionData = this.checklistData[sectionKey];
-                        if (sectionData) {
-                            items.forEach(item => {
-                                const itemData = sectionData.items.find(i => i.id === item.id);
-                                if (itemData && !item.weight) {
-                                    item.weight = itemData.weight;
+                    Object.keys(training.checklist).forEach(sectionKey => {
+                        const templateSection = this.checklistData[sectionKey];
+                        if (templateSection) {
+                            training.checklist[sectionKey].forEach(item => {
+                                const templateItem = templateSection.items.find(t => t.id === item.id);
+                                if (templateItem) {
+                                    // Ensure weight is a NUMBER not string
+                                    item.weight = parseFloat(item.weight) || templateItem.weight;
+                                    
+                                    if (templateItem.action !== item.action) {
+                                        item.action = templateItem.action;
+                                    }
+                                    if (item.completed === true && !item.status) {
+                                        item.status = 'yes';
+                                        delete item.completed;
+                                    } else if (item.completed === false && !item.status) {
+                                        item.status = null;
+                                        delete item.completed;
+                                    }
                                 }
                             });
                         }
-                    }
-                    console.log(`Training ${training.trainingId}:`, {
-                        id: training.id,
-                        title: training.title,
-                        preTraining: training.checklist?.preTraining?.length || 0,
-                        trainingDay: training.checklist?.trainingDay?.length || 0,
-                        postTraining: training.checklist?.postTraining?.length || 0,
-                        progress: this.calculateProgress(training) + '%'
                     });
                 });
+                
+                console.log('Loaded trainings:', this.trainings);
             }
         } catch (error) {
             console.error('Load error:', error);
@@ -1092,29 +1188,20 @@ const app = {
         document.getElementById('dashboardView').classList.remove('hidden');
         document.getElementById('createView').classList.add('hidden');
         document.getElementById('checklistView').classList.add('hidden');
+        document.getElementById('floatingConfirm').classList.remove('visible');
         this.isAuthenticated = false;
         this.renderTrainingList();
-    },
-
-    createNewTraining() {
-        this.editMode = false;
-        this.currentTrainingId = null;
-        document.getElementById('formTitle').textContent = 'Create New Training';
-        this.clearForm();
-        this.showCreateForm();
     },
 
     showCreateForm() {
         document.getElementById('dashboardView').classList.add('hidden');
         document.getElementById('createView').classList.remove('hidden');
         document.getElementById('checklistView').classList.add('hidden');
-        
-        // Only reset if not in edit mode
-        if (!this.editMode) {
-            document.getElementById('formTitle').textContent = 'Create New Training';
-            this.clearForm();
-            this.currentTrainingId = null;
-        }
+        document.getElementById('floatingConfirm').classList.remove('visible');
+        document.getElementById('formTitle').textContent = 'Create New Training';
+        this.clearForm();
+        this.editMode = false;
+        this.currentTrainingId = null;
     },
 
     showChecklist(trainingId, skipAuth = false) {
@@ -1189,28 +1276,8 @@ const app = {
             return hash.toString();
         };
 
-        const getPakistanTime = () => {
-            return new Date().toLocaleString('en-US', { 
-                timeZone: 'Asia/Karachi',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            });
-        };
-
         if (this.editMode && this.currentTrainingId) {
-            console.log('EDIT MODE - Updating existing training:', this.currentTrainingId);
             const training = this.trainings.find(t => t.id === this.currentTrainingId);
-            if (!training) {
-                alert('Error: Training not found!');
-                console.error('Training with ID', this.currentTrainingId, 'not found in:', this.trainings);
-                return;
-            }
-            console.log('Found training to update:', training.trainingId);
             training.title = title;
             training.startDate = startDate;
             training.endDate = endDate;
@@ -1219,9 +1286,7 @@ const app = {
             if (password) {
                 training.passwordHash = hashPassword(password);
             }
-            console.log('Training updated successfully');
         } else {
-            console.log('CREATE MODE - Creating new training');
             const trainingId = this.generateTrainingId(title);
             const newTraining = {
                 id: Date.now(),
@@ -1232,10 +1297,9 @@ const app = {
                 checkerName: checker,
                 venue: venue,
                 passwordHash: hashPassword(password),
-                createdAt: getPakistanTime(),
+                createdAt: this.getPakistanTime(),
                 checklist: this.initializeChecklist()
             };
-            console.log('New training created:', trainingId);
             this.trainings.push(newTraining);
         }
 
@@ -1309,19 +1373,16 @@ const app = {
 
         const durationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
-        // One-day training (start and end on same day)
         if (durationDays === 1) {
             if (today < startDate) {
                 return 'preTraining';
             } else if (today.getTime() === startDate.getTime()) {
-                // On training day - all sections open
                 return 'allSections';
             } else {
                 return 'postTraining';
             }
         }
 
-        // Training longer than 3 days - keep all sections open during training period
         if (durationDays > 3) {
             if (today < startDate) {
                 return 'preTraining';
@@ -1332,7 +1393,6 @@ const app = {
             }
         }
 
-        // 2-3 day trainings - use grace period logic
         const preTrainingGraceEnd = new Date(startDate);
         preTrainingGraceEnd.setDate(preTrainingGraceEnd.getDate() + 1);
 
@@ -1563,14 +1623,8 @@ const app = {
 
             sortedItems.forEach((item) => {
                 const originalIndex = training.checklist[section].findIndex(i => i.id === item.id);
-                
-                // Use weight from item if available, otherwise from checklistData
-                let weight = item.weight;
-                if (!weight) {
-                    const itemData = data.items.find(i => i.id === item.id);
-                    weight = itemData ? itemData.weight : 0;
-                }
-                
+                const itemData = data.items.find(i => i.id === item.id);
+                const weight = itemData ? itemData.weight : 0;
                 const hasOptional = item.action.includes('(If Required)') || item.action.includes('(If Applicable)');
                 const itemClass = item.status === 'yes' ? 'completed' : 
                                 item.status === 'no' ? 'status-no' : 
@@ -1657,16 +1711,7 @@ const app = {
         item.status = status;
         
         if (status === 'yes' || status === 'na') {
-            const pakTime = new Date().toLocaleString('en-US', { 
-                timeZone: 'Asia/Karachi',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            });
-            item.completedDate = pakTime;
+            item.completedDate = this.getPakistanTime();
         } else {
             item.completedDate = '';
         }
@@ -1690,25 +1735,26 @@ const app = {
 
     markPendingChanges() {
         this.pendingChanges = true;
-        document.getElementById('confirmBtn').classList.remove('hidden');
+        document.getElementById('floatingConfirm').classList.add('visible');
     },
 
     async confirmChanges() {
-        const btn = document.getElementById('confirmBtn');
-        btn.textContent = '💾 Saving...';
-        btn.disabled = true;
+        const floatingBtn = document.getElementById('floatingConfirm').querySelector('button');
+        const originalText = floatingBtn.innerHTML;
+        floatingBtn.innerHTML = '<span>💾</span><span>Saving...</span>';
+        floatingBtn.disabled = true;
         
         const success = await this.saveToSheets();
         
         if (success) {
             this.pendingChanges = false;
-            btn.classList.add('hidden');
-            btn.textContent = '✅ Confirm Changes';
-            btn.disabled = false;
-            alert('Changes saved successfully!');
+            document.getElementById('floatingConfirm').classList.remove('visible');
+            floatingBtn.innerHTML = originalText;
+            floatingBtn.disabled = false;
+            alert('✅ Changes saved successfully!');
         } else {
-            btn.textContent = '✅ Confirm Changes';
-            btn.disabled = false;
+            floatingBtn.innerHTML = originalText;
+            floatingBtn.disabled = false;
         }
     },
 
@@ -1717,23 +1763,16 @@ const app = {
         let completedWeight = 0;
         
         for (const [sectionKey, section] of Object.entries(training.checklist)) {
+            const sectionData = this.checklistData[sectionKey];
+            if (!sectionData) continue;
+            
             section.forEach(item => {
-                // Use weight from item if available, otherwise fallback to checklistData
-                let weight = item.weight;
-                if (!weight) {
-                    const sectionData = this.checklistData[sectionKey];
-                    if (sectionData) {
-                        const itemData = sectionData.items.find(i => i.id === item.id);
-                        if (itemData) {
-                            weight = itemData.weight;
-                        }
-                    }
-                }
-                
-                if (weight) {
-                    totalWeight += weight;
+                const itemData = sectionData.items.find(i => i.id === item.id);
+                if (itemData) {
+                    totalWeight += itemData.weight;
+                    
                     if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
-                        completedWeight += weight;
+                        completedWeight += itemData.weight;
                     }
                 }
             });
@@ -1749,25 +1788,18 @@ const app = {
         let completedItems = 0;
         
         for (const [sectionKey, section] of Object.entries(training.checklist)) {
+            const sectionData = this.checklistData[sectionKey];
+            if (!sectionData) continue;
+            
             section.forEach(item => {
                 totalItems++;
                 
-                // Use weight from item if available, otherwise fallback to checklistData
-                let weight = item.weight;
-                if (!weight) {
-                    const sectionData = this.checklistData[sectionKey];
-                    if (sectionData) {
-                        const itemData = sectionData.items.find(i => i.id === item.id);
-                        if (itemData) {
-                            weight = itemData.weight;
-                        }
-                    }
-                }
-                
-                if (weight) {
-                    totalWeight += weight;
+                const itemData = sectionData.items.find(i => i.id === item.id);
+                if (itemData) {
+                    totalWeight += itemData.weight;
+                    
                     if (item.status === 'yes' || item.status === 'no' || item.status === 'na') {
-                        completedWeight += weight;
+                        completedWeight += itemData.weight;
                         completedItems++;
                     }
                 }
