@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UBL L&D Training Checklist Manager</title>
+    <title>🎓 UBL L&D Training Manager</title>
     <style>
         * { 
             margin: 0; 
@@ -630,8 +630,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎓 UBL L&D Training Manager</h1>
-            <p>Streamline Your Training Programs</p>
+            <h1>🎓 UBL L&D Trainflow</h1>
+            <p>Keeping Every Session on-Track</p>
         </div>
 
         <div class="main-content">
@@ -700,11 +700,6 @@
                     <div class="stat-card"><h3 id="completedItems">0</h3><p>Completed</p></div>
                     <div class="stat-card"><h3 id="progressPercentage">0%</h3><p>Progress</p></div>
                 </div>
-                <div class="info-box">
-                    <h4>📋 Dress Code Information</h4>
-                    <p><strong>Weekdays:</strong> Formal dress code as per Bank policy</p>
-                    <p><strong>Weekends:</strong> Smart Casual</p>
-                </div>
                 <div id="checklistContainer"></div>
             </div>
         </div>
@@ -757,16 +752,16 @@ const app = {
             items: [
                 { id: "1.01", action: "Course announcement", timeline: "1 week before training", weight: 2 },
                 { id: "1.02", action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked", weight: 4 },
-                { id: "1.03", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked", weight: 1 },
+                { id: "1.03", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked", weight: 1.5 },
                 { id: "1.04", action: "Nominations Received", timeline: "Validate audience relevance", weight: 3 },
-                { id: "1.05", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 3 },
-                { id: "1.06", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 4 },
-                { id: "1.07", action: "Pre & Post Assessment Developed (If Applicable)", timeline: "Ensure Quilgo link operational", weight: 2 },
-                { id: "1.08", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1.5 },
+                { id: "1.05", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 2 },
+                { id: "1.06", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 3 },
+                { id: "1.07", action: "Pre & Post Assessment Developed (If Applicable)", timeline: "Ensure Quilgo link operational", weight: 4 },
+                { id: "1.08", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1 },
                 { id: "1.09", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before", weight: 1.5 },
                 { id: "1.10", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
                 { id: "1.11", action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
-                { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand", weight: 4 },
+                { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand", weight: 3 },
                 { id: "1.13", action: "Multimedia Check", timeline: "Projector, HDMI, Smartscreens", weight: 3 },
                 { id: "1.14", action: "Stationery Arrangement", timeline: "Pads, charts, markers", weight: 2 },
                 { id: "1.15", action: "Soft Refreshments (If Required)", timeline: "Mints/ Chocolates/ Snacks", weight: 1 },
@@ -782,14 +777,14 @@ const app = {
             items: [
                 { id: "2.01", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance", weight: 4 },
                 { id: "2.02", action: "Handout distribution (If Applicable)", timeline: "Before start of training", weight: 3 },
-                { id: "2.03", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate", weight: 4 },
+                { id: "2.03", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate", weight: 3 },
                 { id: "2.04", action: "Water Dispenser", timeline: "Functional before starting of training", weight: 2 },
                 { id: "2.05", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity", weight: 3 },
                 { id: "2.06", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training", weight: 3 },
                 { id: "2.07", action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning", weight: 3 },
                 { id: "2.08", action: "Feedback Form", timeline: "To be conducted day end", weight: 4 },
                 { id: "2.09", action: "Group Photograph taken", timeline: "Mandatory digital copy", weight: 2 },
-                { id: "2.10", action: "Lunch/Tea timing coordinated", timeline: "Confirm with trainer", weight: 2 }
+                { id: "2.10", action: "Lunch/Tea timing coordinated", timeline: "Confirm with trainer", weight: 3 }
             ]
         },
         postTraining: {
@@ -847,8 +842,27 @@ const app = {
                         const templateSection = this.checklistData[sectionKey];
                         if (templateSection) {
                             training.checklist[sectionKey].forEach(item => {
-                                const templateItem = templateSection.items.find(t => t.id === item.id);
+                                // Handle ID matching - convert 1.1 to 1.01, 2.1 to 2.01, etc.
+                                let searchId = item.id;
+                                if (typeof searchId === 'number') {
+                                    searchId = searchId.toString();
+                                }
+                                
+                                // If ID is like "1.1" or "2.1", try to find "1.01" or "2.01"
+                                let templateItem = templateSection.items.find(t => t.id === searchId);
+                                
+                                if (!templateItem && searchId.includes('.')) {
+                                    const parts = searchId.split('.');
+                                    if (parts[1] && parts[1].length === 1) {
+                                        // Convert 1.1 to 1.01, 2.5 to 2.05
+                                        const paddedId = `${parts[0]}.0${parts[1]}`;
+                                        templateItem = templateSection.items.find(t => t.id === paddedId);
+                                    }
+                                }
+                                
                                 if (templateItem) {
+                                    // Force correct ID from template
+                                    item.id = templateItem.id;
                                     item.weight = parseFloat(item.weight) || templateItem.weight;
                                     
                                     if (templateItem.action !== item.action) {
@@ -1371,10 +1385,7 @@ const app = {
             html += `
                 <div class="info-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; margin-bottom: 25px;">
                     <h4 style="color: #92400e;">🔒 View-Only Mode</h4>
-                    <p style="color: #78350f; margin-bottom: 15px;">You are viewing this training in read-only mode. Click "Update Checklist" to unlock and make changes.</p>
-                    <button class="btn btn-primary" onclick="app.requestPasswordForChecklist()" style="margin-top: 10px;">
-                        🔓 Unlock Checklist
-                    </button>
+                    <p style="color: #78350f; margin-bottom: 0;">You are viewing this training in read-only mode. Use "Update Checklist" or "Edit Info" buttons above to make changes.</p>
                 </div>
             `;
         }
