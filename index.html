@@ -761,7 +761,7 @@ const app = {
                 { id: "1.04", action: "Nominations Received", timeline: "Validate audience relevance", weight: 3 },
                 { id: "1.05", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 3 },
                 { id: "1.06", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 5 },
-                { id: "1.07", action: "Pre & Post Assessment Developed", timeline: "Ensure Quilgo link operational", weight: 4 },
+                { id: "1.07", action: "Pre & Post Assessment Developed (If Applicable)", timeline: "Ensure Quilgo link operational", weight: 4 },
                 { id: "1.08", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1.5 },
                 { id: "1.09", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before", weight: 1.5 },
                 { id: "1.10", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
@@ -1259,7 +1259,10 @@ const app = {
             return;
         }
 
-        container.innerHTML = this.trainings.map(training => {
+        // Sort trainings by creation date (latest first)
+        const sortedTrainings = [...this.trainings].sort((a, b) => b.id - a.id);
+
+        container.innerHTML = sortedTrainings.map(training => {
             const progress = this.calculateProgress(training);
             const startDate = new Date(training.startDate).toLocaleDateString();
             const endDate = new Date(training.endDate).toLocaleDateString();
@@ -1276,9 +1279,13 @@ const app = {
             // Check if single-day training
             const isSingleDay = training.startDate === training.endDate;
             
+            // Check if training is completed (progress is 100%)
+            const isCompleted = progress === 100;
+            const cardStyle = isCompleted ? 'opacity: 0.6; filter: grayscale(20%);' : '';
+            
             return `
-                <div class="training-card" onclick="app.showChecklist(${training.id})">
-                    <h3>${training.title}</h3>
+                <div class="training-card" onclick="app.showChecklist(${training.id})" style="${cardStyle}">
+                    <h3>${training.title} ${isCompleted ? '✅' : ''}</h3>
                     <p style="color: #2563eb; font-weight: 700; font-size: 16px; margin-bottom: 10px;">📋 ID: ${training.trainingId || 'N/A'}</p>
                     ${isSingleDay ? 
                         `<p><strong>Date:</strong> ${startDate}</p>` :
@@ -1412,7 +1419,7 @@ const app = {
                 html += `
                     <div class="checklist-item ${itemClass}">
                         <div class="checklist-item-content" style="flex: 1;">
-                            <div style="font-weight: 600; color: #1f2937; margin-bottom: 10px; font-size: 15px;">${item.id}. ${item.action}</div>
+                            <div style="font-weight: 600; color: #1f2937; margin-bottom: 10px; font-size: 15px;">${item.id} ${item.action}</div>
                             <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: #6b7280; margin-bottom: 12px;">
                                 <span class="detail-badge">📊 ${weight}%</span>
                                 ${item.timeline ? `<span class="detail-badge">⏰ ${item.timeline}</span>` : ''}
@@ -1531,6 +1538,7 @@ const app = {
             floatingBtn.innerHTML = originalText;
             floatingBtn.disabled = false;
             alert('✅ Changes saved successfully!');
+            this.showDashboard(); // Return to dashboard after saving
         } else {
             floatingBtn.innerHTML = originalText;
             floatingBtn.disabled = false;
