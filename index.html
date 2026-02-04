@@ -1709,36 +1709,282 @@ const app = {
         this.showLoading();
         
         try {
-            // Prepare data for Python script
-            const exportData = {
-                trainings: this.trainings.map(training => ({
-                    ...training,
-                    progress: this.calculateProgress(training),
-                    totalItems: this.getTotalItems(training),
-                    completedItems: this.getCompletedItems(training),
-                    month: new Date(training.startDate).toLocaleString('default', { month: 'long', year: 'numeric' }),
-                    venue: training.venue
-                }))
-            };
+            // Load SheetJS library if not already loaded
+            if (!window.XLSX) {
+                await this.loadSheetJS();
+            }
             
-            // Save data as JSON file for Python to process
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `training-data-export-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
+            // Create workbook
+            const wb = window.XLSX.utils.book_new();
             
-            alert('📊 Export data prepared!\n\nThe JSON file has been downloaded. To create the full Excel dashboard with charts:\n\n1. Upload the JSON file\n2. Request: "Create comprehensive training dashboard Excel from this data"');
+            // Create all sheets
+            this.createDashboardSheet(wb);
+            this.createMonthlySummarySheet(wb);
+            this.createVenueUtilizationSheet(wb);
+            this.createCompletionDetailsSheet(wb);
+            this.createAllTrainingsSheet(wb);
+            
+            // Generate Excel file
+            const filename = `UBL_TrainFlow_Dashboard_${new Date().toISOString().split('T')[0]}.xlsx`;
+            window.XLSX.writeFile(wb, filename);
+            
+            alert('✅ Excel dashboard exported successfully!\n\nFile: ' + filename);
             
         } catch (error) {
             console.error('Export error:', error);
-            alert('Error exporting data. Check console for details.');
+            alert('Error exporting Excel. Check console for details.');
         }
         
         this.hideLoading();
+    },
+    
+    async loadSheetJS() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    },
+    
+    createDashboardSheet(wb) {
+        const total = this.trainings.length;
+        const completed = this.trainings.filter(t => this.calculateProgress(t) === 100).length;
+        const inProgress = this.trainings.filter(t => {
+            const p = this.calculateProgress(t);
+            return p > 0 && p < 100;
+        }).length;
+        const notStarted = this.trainings.filter(t => this.calculateProgress(t) === 0).length;
+        const avgProgress = total > 0 ? (this.trainings.reduce((sum, t) => sum + this.calculateProgress(t), 0) / total).toFixed(1) : 0;
+        
+        const data = [
+            ['🎓 UBL L&D TrainFlow - Training Dashboard'],
+            ['Generated: ' + new Date().toLocaleString()],
+            [],
+            ['Key Performance Indicators'],
+            [],
+            ['Metric', 'Value'],
+            ['Total Trainings', total],
+            ['Completed (100%)', completed],
+            ['In Progress (1-99%)', inProgress],
+            ['Not Started (0%)', notStarted],
+            ['Average Progress', avgProgress + '%'],
+            [],
+            ['Training Status Distribution'],
+            ['Status', 'Count'],
+            ['Completed (100%)', completed],
+            ['In Progress (1-99%)', inProgress],
+            ['Not Started (0%)', notStarted],
+            [],
+            [],
+            ['© 2026 LS Engineering. All rights reserved.']
+        ];
+        
+        const ws = window.XLSX.utils.aoa_to_sheet(data);
+        
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 35 },
+            { wch: 15 }
+        ];
+        
+        window.XLSX.utils.book_append_sheet(wb, ws, '📊 Dashboard');
+    },
+    
+    createMonthlySummarySheet(wb) {
+        // Group by month
+        const monthlyData = {};
+        this.trainings.forEach(training => {
+            const date = new Date(training.startDate);
+            const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+            if (!monthlyData[month]) {
+                monthlyData[month] = {
+                    total: 0,
+                    completed: 0,
+                    inProgress: 0,
+                    notStarted: 0,
+                    ids: []
+                };
+            }
+            
+            const progress = this.calculateProgress(training);
+            monthlyData[month].total++;
+            monthlyData[month].ids.push(training.trainingId);
+            
+            if (progress === 100) monthlyData[month].completed++;
+            else if (progress > 0) monthlyData[month].inProgress++;
+            else monthlyData[month].notStarted++;
+        });
+        
+        const data = [
+            ['📅 Monthly Training Summary'],
+            ['Generated: ' + new Date().toLocaleString()],
+            [],
+            ['Month', 'Total', 'Completed', 'In Progress', 'Not Started', 'Completion %', 'Training IDs']
+        ];
+        
+        Object.keys(monthlyData).sort().forEach(month => {
+            const md = monthlyData[month];
+            const completionRate = md.total > 0 ? ((md.completed / md.total) * 100).toFixed(1) : 0;
+            data.push([
+                month,
+                md.total,
+                md.completed,
+                md.inProgress,
+                md.notStarted,
+                completionRate + '%',
+                md.ids.join(', ')
+            ]);
+        });
+        
+        const ws = window.XLSX.utils.aoa_to_sheet(data);
+        
+        ws['!cols'] = [
+            { wch: 20 },
+            { wch: 10 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 14 },
+            { wch: 40 }
+        ];
+        
+        window.XLSX.utils.book_append_sheet(wb, ws, '📅 Monthly Summary');
+    },
+    
+    createVenueUtilizationSheet(wb) {
+        // Group by venue
+        const venueData = {};
+        this.trainings.forEach(training => {
+            const venue = training.venue || 'Unknown';
+            venueData[venue] = (venueData[venue] || 0) + 1;
+        });
+        
+        const total = this.trainings.length;
+        
+        const data = [
+            ['🏢 Training Room Utilization'],
+            ['Generated: ' + new Date().toLocaleString()],
+            [],
+            ['Venue/Room', 'Total Trainings', 'Utilization %', 'Status']
+        ];
+        
+        Object.entries(venueData)
+            .sort((a, b) => b[1] - a[1])
+            .forEach(([venue, count]) => {
+                const utilization = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                let status = 'Low Usage';
+                if (utilization >= 30) status = 'High Usage';
+                else if (utilization >= 15) status = 'Moderate';
+                
+                data.push([venue, count, utilization + '%', status]);
+            });
+        
+        const ws = window.XLSX.utils.aoa_to_sheet(data);
+        
+        ws['!cols'] = [
+            { wch: 35 },
+            { wch: 18 },
+            { wch: 15 },
+            { wch: 15 }
+        ];
+        
+        window.XLSX.utils.book_append_sheet(wb, ws, '🏢 Venue Utilization');
+    },
+    
+    createCompletionDetailsSheet(wb) {
+        const data = [
+            ['✅ Detailed Completion Tracking'],
+            ['Generated: ' + new Date().toLocaleString()],
+            [],
+            ['Training ID', 'Training Name', 'Month', 'Venue', 'Total Items', 'Completed', 'Progress %', 'Status']
+        ];
+        
+        this.trainings
+            .sort((a, b) => this.calculateProgress(b) - this.calculateProgress(a))
+            .forEach(training => {
+                const progress = this.calculateProgress(training);
+                const totalItems = this.getTotalItems(training);
+                const completedItems = this.getCompletedItems(training);
+                const month = new Date(training.startDate).toLocaleString('default', { month: 'long', year: 'numeric' });
+                
+                let status = '⭕ Not Started';
+                if (progress === 100) status = '✅ Complete';
+                else if (progress >= 50) status = '🔄 In Progress';
+                else if (progress > 0) status = '🟡 Started';
+                
+                data.push([
+                    training.trainingId,
+                    training.title,
+                    month,
+                    training.venue,
+                    totalItems,
+                    completedItems,
+                    progress + '%',
+                    status
+                ]);
+            });
+        
+        const ws = window.XLSX.utils.aoa_to_sheet(data);
+        
+        ws['!cols'] = [
+            { wch: 15 },
+            { wch: 40 },
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 18 }
+        ];
+        
+        window.XLSX.utils.book_append_sheet(wb, ws, '✅ Completion Details');
+    },
+    
+    createAllTrainingsSheet(wb) {
+        const data = [
+            ['📋 Complete Training List'],
+            ['Generated: ' + new Date().toLocaleString()],
+            [],
+            ['Training ID', 'Title', 'Start Date', 'End Date', 'Venue', 'Checker', 'Created', 'Progress %', 'Status']
+        ];
+        
+        this.trainings.forEach(training => {
+            const progress = this.calculateProgress(training);
+            let status = 'Not Started';
+            if (progress === 100) status = 'Completed';
+            else if (progress > 0) status = 'In Progress';
+            
+            data.push([
+                training.trainingId,
+                training.title,
+                training.startDate,
+                training.endDate,
+                training.venue,
+                training.checkerName,
+                training.createdAt,
+                progress + '%',
+                status
+            ]);
+        });
+        
+        const ws = window.XLSX.utils.aoa_to_sheet(data);
+        
+        ws['!cols'] = [
+            { wch: 15 },
+            { wch: 45 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 30 },
+            { wch: 25 },
+            { wch: 30 },
+            { wch: 12 },
+            { wch: 15 }
+        ];
+        
+        window.XLSX.utils.book_append_sheet(wb, ws, '📋 All Trainings');
     },
     
     getTotalItems(training) {
