@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎓 UBL L&D Training Manager</title>
+    <title>UBL L&D Training Checklist Manager</title>
     <style>
         * { 
             margin: 0; 
@@ -703,6 +703,10 @@
                 <div id="checklistContainer"></div>
             </div>
         </div>
+        
+        <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.7); font-size: 12px;">
+            © 2026 LS Engineering. All rights reserved.
+        </div>
     </div>
 
     <!-- Floating Confirm Button -->
@@ -748,55 +752,55 @@ const app = {
     checklistData: {
         preTraining: {
             title: "Pre-Training - Program Readiness & Planning",
-            totalWeight: 50,
+            totalWeight: 55,
             items: [
                 { id: "1.01", action: "Course announcement", timeline: "1 week before training", weight: 2 },
                 { id: "1.02", action: "Trainer Confirmation", timeline: "Confirmation Email/ Calender Blocked", weight: 4 },
                 { id: "1.03", action: "Alternative Trainer Confirmation (If Applicable)", timeline: "Confirmation Email/ Calender Blocked", weight: 1.5 },
                 { id: "1.04", action: "Nominations Received", timeline: "Validate audience relevance", weight: 3 },
-                { id: "1.05", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 2 },
-                { id: "1.06", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 3 },
+                { id: "1.05", action: "Invitation email to Participants", timeline: "1-2 Days before training", weight: 3 },
+                { id: "1.06", action: "Availability of course material", timeline: "Latest version to be saved in L&D Repository", weight: 5 },
                 { id: "1.07", action: "Pre & Post Assessment Developed (If Applicable)", timeline: "Ensure Quilgo link operational", weight: 4 },
-                { id: "1.08", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1 },
+                { id: "1.08", action: "Reminder email to Trainer", timeline: "1-2 days before training", weight: 1.5 },
                 { id: "1.09", action: "Transport Arrangements for Trainer (If Required)", timeline: "2 days before", weight: 1.5 },
-                { id: "1.1O", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
-                { id: "1.11", action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
-                { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand", weight: 3 },
+                { id: "1.1o", action: "Hotel arrangement for Trainer (If Required)", timeline: "Via Travel Desk", weight: 1.5 },
+                { id: "1.11", action: "Hotel arrangement for participants (If Required)", timeline: "Via Travel Desk", weight: 2 },
+                { id: "1.12", action: "Classroom Reservation", timeline: "Room to be reserved beforehand", weight: 4 },
                 { id: "1.13", action: "Multimedia Check", timeline: "Projector, HDMI, Smartscreens", weight: 3 },
-                { id: "1.14", action: "Stationery Arrangement", timeline: "Pads, charts, markers", weight: 2 },
+                { id: "1.14", action: "Stationery Arrangement", timeline: "Pads, charts, markers", weight: 2.5 },
                 { id: "1.15", action: "Soft Refreshments (If Required)", timeline: "Mints/ Chocolates/ Snacks", weight: 1 },
                 { id: "1.16", action: "Video conferencing + Link (If Applicable)", timeline: "Ensure working", weight: 3 },
-                { id: "1.17", action: "Lunch/Tea/Refreshments Arrangement", timeline: "1 day before", weight: 3 },
+                { id: "1.17", action: "Lunch/Tea/Refreshments Arrangement", timeline: "1 day before", weight: 2.5 },
                 { id: "1.18", action: "Photographer Booking (If Required)", timeline: "2 days before", weight: 1 },
-                { id: "1.19", action: "Attendance sheet uploaded", timeline: "To be Uploaded 1 day prior to training", weight: 3 }
+                { id: "1.19", action: "Attendance sheet uploaded", timeline: "To be Uploaded 1 day prior to training", weight: 4 }
             ]
         },
         trainingDay: {
             title: "Training Day - Operations & Experience Control",
-            totalWeight: 30,
+            totalWeight: 35,
             items: [
-                { id: "2.01", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance", weight: 4 },
+                { id: "2.01", action: "Attendance Sheet Active", timeline: "Sheet available for marking Attendance", weight: 6 },
                 { id: "2.02", action: "Handout distribution (If Applicable)", timeline: "Before start of training", weight: 3 },
-                { id: "2.03", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate", weight: 3 },
+                { id: "2.03", action: "Classroom Readiness", timeline: "Room temperature & Seating Layout appropriate", weight: 5 },
                 { id: "2.04", action: "Water Dispenser", timeline: "Functional before starting of training", weight: 2 },
-                { id: "2.05", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity", weight: 3 },
-                { id: "2.06", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training", weight: 3 },
+                { id: "2.05", action: "Trainer Laptop Test (If Required)", timeline: "Ensure seamless connectivity", weight: 3.5 },
+                { id: "2.06", action: "Laptop for presentation (If Required)", timeline: "To be tested before start of training", weight: 3.5 },
                 { id: "2.07", action: "Pre-Assessment link (If Applicable)", timeline: "Tested & Conducted at beginning", weight: 3 },
                 { id: "2.08", action: "Feedback Form", timeline: "To be conducted day end", weight: 4 },
                 { id: "2.09", action: "Group Photograph taken", timeline: "Mandatory digital copy", weight: 2 },
-                { id: "2.1O", action: "Lunch/Tea timing coordinated", timeline: "Confirm with trainer", weight: 3 }
+                { id: "2.1o", action: "Lunch/Tea timing coordinated", timeline: "Confirm with trainer", weight: 3 }
             ]
         },
         postTraining: {
             title: "Post Training - Learning Effectiveness & Closure",
-            totalWeight: 20,
+            totalWeight: 10,
             items: [
-                { id: "3.01", action: "Feedback Form Circulation", timeline: "1 day after training concluded", weight: 5 },
-                { id: "3.02", action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded", weight: 5 },
+                { id: "3.01", action: "Feedback Form Circulation", timeline: "1 day after training concluded", weight: 3 },
+                { id: "3.02", action: "Thank you email to Trainer & Participants", timeline: "1 day after training concluded", weight: 1 },
                 { id: "3.03", action: "Pre/Post Assessment Results shared with Stakeholders", timeline: "2-3 days after", weight: 2 },
-                { id: "3.04", action: "Compilation of Feedback", timeline: "2-3 days after", weight: 3 },
-                { id: "3.05", action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week", weight: 3 },
-                { id: "3.06", action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after", weight: 2 }
+                { id: "3.04", action: "Compilation of Feedback", timeline: "2-3 days after", weight: 2 },
+                { id: "3.05", action: "Course Detail in MIS + U-Fusion", timeline: "Within 1 week", weight: 1 },
+                { id: "3.06", action: "Certificate Printing & Dispatch (If Applicable)", timeline: "1 week after", weight: 1 }
             ]
         }
     },
@@ -842,19 +846,38 @@ const app = {
                         const templateSection = this.checklistData[sectionKey];
                         if (templateSection) {
                             training.checklist[sectionKey].forEach(item => {
-                                // Handle ID matching - convert 1.1 to 1.01, 2.1 to 2.01, etc.
+                                // Handle ID matching - convert various formats
                                 let searchId = item.id;
                                 if (typeof searchId === 'number') {
                                     searchId = searchId.toString();
                                 }
                                 
-                                // If ID is like "1.1" or "2.1", try to find "1.01" or "2.01"
+                                // Try exact match first
                                 let templateItem = templateSection.items.find(t => t.id === searchId);
                                 
                                 if (!templateItem && searchId.includes('.')) {
                                     const parts = searchId.split('.');
-                                    if (parts[1] && parts[1].length === 1) {
-                                        // Convert 1.1 to 1.01, 2.5 to 2.05
+                                    
+                                    // Handle conversions:
+                                    // 1.10 or 2.10 → 1.1o or 2.1o
+                                    // 1.1 or 2.1 → 1.01 or 1.1o (try both)
+                                    
+                                    if (parts[1] === '10') {
+                                        // Convert 1.10 to 1.1o
+                                        const convertedId = `${parts[0]}.1o`;
+                                        templateItem = templateSection.items.find(t => t.id === convertedId);
+                                    } else if (parts[1] === '1') {
+                                        // Try 1.1 → 1.01 first
+                                        const paddedId = `${parts[0]}.0${parts[1]}`;
+                                        templateItem = templateSection.items.find(t => t.id === paddedId);
+                                        
+                                        // If not found, try 1.1 → 1.1o
+                                        if (!templateItem) {
+                                            const oId = `${parts[0]}.1o`;
+                                            templateItem = templateSection.items.find(t => t.id === oId);
+                                        }
+                                    } else if (parts[1] && parts[1].length === 1 && parts[1] !== '1') {
+                                        // Convert other single digits like 1.5 to 1.05
                                         const paddedId = `${parts[0]}.0${parts[1]}`;
                                         templateItem = templateSection.items.find(t => t.id === paddedId);
                                     }
@@ -1677,16 +1700,64 @@ const app = {
         document.getElementById('trainingPassword').value = '';
     },
 
-    exportAllData() {
-        const dataStr = JSON.stringify(this.trainings, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `training-data-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-    }
+    async exportAllData() {
+        if (this.trainings.length === 0) {
+            alert('No training data to export!');
+            return;
+        }
+        
+        this.showLoading();
+        
+        try {
+            // Prepare data for Python script
+            const exportData = {
+                trainings: this.trainings.map(training => ({
+                    ...training,
+                    progress: this.calculateProgress(training),
+                    totalItems: this.getTotalItems(training),
+                    completedItems: this.getCompletedItems(training),
+                    month: new Date(training.startDate).toLocaleString('default', { month: 'long', year: 'numeric' }),
+                    venue: training.venue
+                }))
+            };
+            
+            // Save data as JSON file for Python to process
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `training-data-export-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            alert('📊 Export data prepared!\n\nThe JSON file has been downloaded. To create the full Excel dashboard with charts:\n\n1. Upload the JSON file\n2. Request: "Create comprehensive training dashboard Excel from this data"');
+            
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Error exporting data. Check console for details.');
+        }
+        
+        this.hideLoading();
+    },
+    
+    getTotalItems(training) {
+        let total = 0;
+        for (const section of Object.values(training.checklist)) {
+            total += section.length;
+        }
+        return total;
+    },
+    
+    getCompletedItems(training) {
+        let completed = 0;
+        for (const section of Object.values(training.checklist)) {
+            completed += section.filter(item => 
+                item.status === 'yes' || item.status === 'no' || item.status === 'na'
+            ).length;
+        }
+        return completed;
+    },
 };
 
 app.init();
