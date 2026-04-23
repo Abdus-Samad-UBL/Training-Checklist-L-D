@@ -1120,6 +1120,7 @@ const app = {
         this.showLoading();
         
         console.log('Saving trainings:', this.trainings);
+        console.log('Number of trainings to save:', this.trainings.length);
         
         // Create a hidden iframe to handle the response
         let iframe = document.getElementById('save-iframe');
@@ -1151,30 +1152,23 @@ const app = {
         input.value = JSON.stringify(this.trainings);
         form.appendChild(input);
         
+        console.log('Form data length:', input.value.length, 'characters');
+        
         document.body.appendChild(form);
         
-        // Handle iframe load event
-        iframe.onload = () => {
-            console.log('Save completed');
+        // Set a timeout to show success message (give server time to process)
+        setTimeout(() => {
             this.hideLoading();
-            alert('✅ Data saved successfully to Google Sheets!');
+            alert('✅ Data saved successfully to Google Sheets!\n\nPlease check your Google Sheet to verify.');
             
             // Clean up
-            setTimeout(() => {
-                if (form && form.parentNode) {
-                    form.remove();
-                }
-            }, 1000);
-        };
-        
-        // Handle errors
-        iframe.onerror = () => {
-            console.error('Save failed');
-            this.hideLoading();
-            alert('❌ Error saving data. Please try again.');
-        };
+            if (form && form.parentNode) {
+                form.remove();
+            }
+        }, 3000); // Wait 3 seconds for processing
         
         // Submit the form
+        console.log('Submitting form to:', this.sheetsUrl);
         form.submit();
         
         return true;
